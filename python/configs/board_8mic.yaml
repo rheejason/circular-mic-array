@@ -1,0 +1,44 @@
+# Final board: 8 PDM MEMS mics in a UCA -> ADAU7118 -> TDM8 -> STM32H743 SAI.
+# Derived quantities (spacing, aliasing onset, max delay) are computed at load time; don't add them here.
+
+array:
+  n_mics: 8
+  type: uca               # uca | custom
+  radius_m: 0.055         # 110 mm diameter (pending radius sweep)
+  angle_offset_deg: 0.0   # azimuth of mic 0, CCW from +x
+  positions_m: null       # required for type: custom, as [[x, y], ...] or [[x, y, z], ...]
+  channel_map: [0, 1, 2, 3, 4, 5, 6, 7]   # channel_map[ch] = mic index carried on TDM slot ch
+
+audio:
+  fs_beamformer: 48000
+  fs_doa: 16000
+  bit_depth: 16
+  c: 343.0
+
+stft:
+  fft_size: 512           # must be a power of 2 in [32, 4096] (arm_rfft_fast_f32)
+  hop: 256
+  window: sqrt_hann       # hann | sqrt_hann | hamming
+
+beamformer:
+  type: superdirective    # das | superdirective | mvdr_adaptive
+  wng_floor_db: -10.0
+  band_min_hz: 100.0
+  band_max_hz: auto       # auto = spatial aliasing onset
+  crossfade_ms: 30.0
+
+doa:
+  method: srp_phat        # gcc_phat | srp_phat
+  azimuth_grid_deg: 5.0
+  freq_min_hz: 300.0
+  freq_max_hz: auto       # auto = min(aliasing onset, fs_doa / 2)
+  update_rate_hz: 10.0
+
+sim:
+  room_dim_m: [6.0, 5.0, 3.0]
+  rt60_s: 0.4
+  array_center_m: [3.0, 2.5, 0.75]   # on the table
+  snr_db: 20.0
+  sources:
+    - {azimuth_deg: 30.0, distance_m: 2.0, height_m: 1.2}
+    - {azimuth_deg: 200.0, distance_m: 2.0, height_m: 1.2}

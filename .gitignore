@@ -22,3 +22,8 @@ fp-info-cache
 # OS / editor
 .DS_Store
 .vscode/
+# Captures and sim outputs (keep the folder, not the contents)
+python/data/*
+!python/data/.gitkeep
+*.egg-info/
+.pytest_cache/

@@ -1,0 +1,27 @@
+[build-system]
+requires = ["setuptools>=64"]
+build-backend = "setuptools.build_meta"
+
+[project]
+name = "arraydsp"
+version = "0.1.0"
+description = "Audio Zoom Lens: 8-mic circular beamforming array DSP prototyping (UIUC ECE 395)"
+requires-python = ">=3.10"
+dependencies = [
+    "numpy",
+    "scipy",
+    "matplotlib",
+    "pyyaml",
+    "soundfile",
+    "pyroomacoustics",
+]
+
+[project.optional-dependencies]
+test = ["pytest"]
+
+[tool.setuptools.packages.find]
+include = ["arraydsp*"]
+
+[tool.pytest.ini_options]
+testpaths = ["tests"]
+pythonpath = ["."]

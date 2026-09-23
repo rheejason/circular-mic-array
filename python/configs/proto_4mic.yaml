@@ -1,0 +1,47 @@
+# Bench prototype: NUCLEO-H743 + 4 Adafruit mic breakouts wired straight to the MCU.
+#
+# TODO(hardware): exact Adafruit part number and interface (PDM -> DFSDM, or I2S -> SAI).
+# TODO(hardware): physical layout. The geometry below is a PLACEHOLDER: a 4-element UCA on the
+#                 same 55 mm radius as the final board. Replace it once the rig is built.
+# TODO(hardware): bit_depth and channel_map depend on the interface above.
+
+array:
+  n_mics: 4
+  type: uca
+  radius_m: 0.055         # PLACEHOLDER, see TODO above
+  angle_offset_deg: 0.0
+  positions_m: null
+  channel_map: [0, 1, 2, 3]
+
+audio:
+  fs_beamformer: 48000
+  fs_doa: 16000
+  bit_depth: 16           # PLACEHOLDER, see TODO above
+  c: 343.0
+
+stft:
+  fft_size: 512
+  hop: 256
+  window: sqrt_hann
+
+beamformer:
+  type: das
+  wng_floor_db: -10.0
+  band_min_hz: 100.0
+  band_max_hz: auto
+  crossfade_ms: 30.0
+
+doa:
+  method: srp_phat
+  azimuth_grid_deg: 5.0
+  freq_min_hz: 300.0
+  freq_max_hz: auto
+  update_rate_hz: 10.0
+
+sim:
+  room_dim_m: [6.0, 5.0, 3.0]
+  rt60_s: 0.4
+  array_center_m: [3.0, 2.5, 0.75]
+  snr_db: 20.0
+  sources:
+    - {azimuth_deg: 30.0, distance_m: 2.0, height_m: 1.2}
