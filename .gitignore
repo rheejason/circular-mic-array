@@ -1,0 +1,38 @@
+# Firmware build output
+build/
+Debug/
+Release/
+*.elf
+*.bin
+*.hex
+*.map
+*.list
+
+# STM32CubeIDE workspace (keep the workspace outside the repo; this catches it if not)
+.metadata/
+RemoteSystemsTempFiles/
+
+# KiCad
+*-backups/
+*.kicad_prl
+fp-info-cache
+*.lck
+\#auto_saved_files#
+_autosave-*
+
+# Python (for when the prototype moves in)
+__pycache__/
+*.pyc
+.venv/
+.ipynb_checkpoints/
+*.egg-info/
+.pytest_cache/
+
+# Local assistant notes
+CLAUDE.md
+CLAUDE.local.md
+.claude/
+
+# OS / editor
+.DS_Store
+.vscode/
