@@ -1,0 +1,5 @@
+(fp_lib_table
+	(version 7)
+	(lib (name "Beamformer") (type "KiCad") (uri "${KIPRJMOD}/Beamformer.pretty") (options "") (descr ""))
+	(lib (name "T5838") (type "KiCad") (uri "C:/Users/sstim/Downloads/MMICT5838-00-012/T5838.pretty") (options "") (descr ""))
+)

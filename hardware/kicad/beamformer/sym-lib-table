@@ -1,0 +1,7 @@
+(sym_lib_table
+	(version 7)
+	(lib (name "TLC59116F") (type "KiCad") (uri "C:/Users/sstim/Downloads/ul_TLC59116FIPWR/KiCADv6/TLC59116F.kicad_sym") (options "") (descr ""))
+	(lib (name "T5838") (type "KiCad") (uri "C:/Users/sstim/Downloads/MMICT5838-00-012/T5838.kicad_sym") (options "") (descr ""))
+	(lib (name "ADAU7118") (type "KiCad") (uri "C:/Users/sstim/Downloads/ul_ADAU7118ACPZRL/KiCADv6/ADAU7118.kicad_sym") (options "") (descr ""))
+	(lib (name "SN74AXC4T774PWR") (type "KiCad") (uri "C:/Users/sstim/Downloads/ul_SN74AXC4T774PWR/KiCADv6/SN74AXC4T774PWR.kicad_sym") (options "") (descr ""))
+)

@@ -36,3 +36,6 @@ CLAUDE.local.md
 # OS / editor
 .DS_Store
 .vscode/
+
+.history/
+hardware/kicad/beamformer/.history/
