@@ -1,0 +1,162 @@
+(footprint "LED_Kingbright_AA4040QBS-G"
+	(version 20260206)
+	(generator "pcbnew")
+	(generator_version "10.0")
+	(layer "F.Cu")
+	(descr "LED PLCC-2 SMD package, orientation marker at anode, https://look.ams-osram.com/m/6070706f97923d92/original/SFH-4257.pdf")
+	(tags "LED PLCC-2 SMD TOPLED")
+	(property "Reference" "REF**"
+		(at 0.5 -3.5 0)
+		(layer "F.SilkS")
+		(uuid "ccc6dab4-6a18-4729-9c48-9ff4847a2cbc")
+		(effects
+			(font
+				(size 1 1)
+				(thickness 0.15)
+			)
+		)
+	)
+	(property "Value" "LED_Kingbright_AA4040QBS-G"
+		(at 0 3.5 0)
+		(layer "F.Fab")
+		(uuid "7b211deb-ecd8-4085-b458-070e760ec2d6")
+		(effects
+			(font
+				(size 1 1)
+				(thickness 0.15)
+			)
+		)
+	)
+	(property "Datasheet" ""
+		(at 0 0 0)
+		(unlocked yes)
+		(layer "F.Fab")
+		(hide yes)
+		(uuid "10df9f93-56a0-4da1-86db-97a69ebea1ef")
+		(effects
+			(font
+				(size 1.27 1.27)
+				(thickness 0.15)
+			)
+		)
+	)
+	(property "Description" ""
+		(at 0 0 0)
+		(unlocked yes)
+		(layer "F.Fab")
+		(hide yes)
+		(uuid "8da2b2a5-d63a-425d-9781-8acdae1837a6")
+		(effects
+			(font
+				(size 1.27 1.27)
+				(thickness 0.15)
+			)
+		)
+	)
+	(attr smd)
+	(duplicate_pad_numbers_are_jumpers no)
+	(fp_line
+		(start -2.2 -2)
+		(end -2.2 2)
+		(stroke
+			(width 0.1)
+			(type solid)
+		)
+		(layer "F.SilkS")
+		(uuid "a26ffa55-3164-4edd-864d-9494a91d71b3")
+	)
+	(fp_line
+		(start -2.35 -2.25)
+		(end -2.35 2.25)
+		(stroke
+			(width 0.05)
+			(type solid)
+		)
+		(layer "F.CrtYd")
+		(uuid "e325bb39-bb3a-4407-9fcb-9415ac78a6fc")
+	)
+	(fp_line
+		(start -2.35 -2.25)
+		(end 2.35 -2.25)
+		(stroke
+			(width 0.05)
+			(type solid)
+		)
+		(layer "F.CrtYd")
+		(uuid "831286de-e8c7-4eea-af31-86e4bd7a5b08")
+	)
+	(fp_line
+		(start -2.35 2.25)
+		(end 2.35 2.25)
+		(stroke
+			(width 0.05)
+			(type solid)
+		)
+		(layer "F.CrtYd")
+		(uuid "6551f596-5aef-4144-a3ca-467898019f7d")
+	)
+	(fp_line
+		(start 2.35 -2.25)
+		(end 2.35 2.25)
+		(stroke
+			(width 0.05)
+			(type solid)
+		)
+		(layer "F.CrtYd")
+		(uuid "72d48b9b-83ab-4c48-a021-0ab7565669e8")
+	)
+	(fp_line
+		(start -1.7 -1.5)
+		(end -1.7 1.5)
+		(stroke
+			(width 0.1)
+			(type solid)
+		)
+		(layer "F.Fab")
+		(uuid "c79a62ca-2219-42e3-8250-fdc71368e044")
+	)
+	(fp_line
+		(start -1.7 -0.6)
+		(end -0.8 -1.5)
+		(stroke
+			(width 0.1)
+			(type solid)
+		)
+		(layer "F.Fab")
+		(uuid "13cd03f2-8af9-4faa-999d-0697e7dc065d")
+	)
+	(fp_line
+		(start 1.7 1.5)
+		(end 1.7 -1.5)
+		(stroke
+			(width 0.1)
+			(type solid)
+		)
+		(layer "F.Fab")
+		(uuid "82599fcc-999a-44c8-8f62-944c6eee5365")
+	)
+	(pad "1" smd rect
+		(at -1.25 0)
+		(size 1.7 4)
+		(layers "F.Cu" "F.Mask" "F.Paste")
+		(uuid "e55904a1-3ad7-45d3-96a3-1fb77b6cd2c3")
+	)
+	(pad "2" smd rect
+		(at 1.25 0)
+		(size 1.7 4)
+		(layers "F.Cu" "F.Mask" "F.Paste")
+		(uuid "d3d74a2c-0281-4c57-a0f5-4beb586d7612")
+	)
+	(embedded_fonts no)
+	(model "${KICAD10_3DMODEL_DIR}/LED_SMD.3dshapes/LED_PLCC-2_3.4x3.0mm_AK.step"
+		(offset
+			(xyz 0 0 0)
+		)
+		(scale
+			(xyz 1 1 1)
+		)
+		(rotate
+			(xyz 0 0 0)
+		)
+	)
+)
