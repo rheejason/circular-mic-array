@@ -1,12 +1,11 @@
 /*
  * app_main.h
- *
- * Application entry points, called from the USER CODE blocks in main.c.
+ * Entry points called from main.c.
  */
 #ifndef APP_MAIN_H
 #define APP_MAIN_H
 
-void app_init(void);    /* once, after the MX_*_Init() calls */
-void app_loop(void);    /* every pass of the while(1) loop */
+void app_init(void);    /* once, after the CubeMX init calls */
+void app_loop(void);    /* every pass of the main while(1) loop */
 
 #endif /* APP_MAIN_H */

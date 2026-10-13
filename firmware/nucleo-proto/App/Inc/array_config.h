@@ -1,24 +1,23 @@
 /*
  * array_config.h
- *
- * Array geometry and audio constants for the 4-mic bench rig. Keep in sync with the Python side.
+ * Array geometry and audio settings. Keep in sync with the Python code.
  */
 #ifndef ARRAY_CONFIG_H
 #define ARRAY_CONFIG_H
 
-/* Geometry: mic 0 at 0 deg (+x), counter-clockwise, 90 deg apart */
+/* Geometry: mic 0 at 0 deg (+x), then counter-clockwise every 90 deg */
 #define NUM_MICS            4U
 #define MIC_RADIUS_M        0.045f
 
-/* Audio */
+/* Audio: 1.536 MHz PDM clock / 32 = 48 kHz */
 #define FS_HZ               48000U
-#define BLOCK_SAMPLES       48U         /* samples per mic per block = 1 ms at 48 kHz */
-#define PDM_DECIMATION      32U         /* 3.072 MHz PDM clock / 64 = 48 kHz */
+#define PDM_DECIMATION      32U
+#define BLOCK_SAMPLES       48U     /* samples per mic per block (1 ms) */
 
-/* PDM bytes for one block, all mics: 48 samples * 64 bits / 8 bits per byte * 4 mics = 1536 */
+/* PDM bytes in one block, all mics: 48 samples x 32 bits / 8 x 4 mics = 768 */
 #define PDM_BLOCK_BYTES     (BLOCK_SAMPLES * PDM_DECIMATION / 8U * NUM_MICS)
 
-/* RAM recording (AXI SRAM is 512 KB, so ~1.3 s max at 4 ch x 16 bit x 48 kHz) */
+/* RAM recording length (AXI SRAM fits about 1.3 s) */
 #define REC_SECONDS         1U
 #define REC_SAMPLES         (FS_HZ * REC_SECONDS)   /* per mic */
 

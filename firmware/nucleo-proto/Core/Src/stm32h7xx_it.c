@@ -219,8 +219,7 @@ void DMA1_Stream0_IRQHandler(void)
 void SAI1_IRQHandler(void)
 {
   /* USER CODE BEGIN SAI1_IRQn 0 */
-  /* CubeMX left this handler empty. In DMA mode the HAL enables the SAI overrun interrupt; without
-     this call its flag is never cleared and the interrupt fires forever, freezing the main loop. */
+  /* CubeMX leaves this empty. Without it an SAI error flag is never cleared and the board freezes. */
   HAL_SAI_IRQHandler(&hsai_BlockA1);
 
   /* USER CODE END SAI1_IRQn 0 */

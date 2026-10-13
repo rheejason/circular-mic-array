@@ -1,9 +1,8 @@
 /*
  * recorder.h
- *
- * Button-triggered RAM recording of REC_SECONDS of 4-channel audio into rec_buf
- * (interleaved int16, m0 m1 m2 m3 m0 ...). Export rec_buf from the debugger's Memory Browser
- * as RAW Binary: REC_SAMPLES * NUM_MICS * 2 bytes.
+ * Records REC_SECONDS of audio into rec_buf.
+ * rec_buf is 16-bit, interleaved m0 m1 m2 m3 m0 ... Save it from the gdb console with:
+ *   dump binary value <file>.bin rec_buf
  */
 #ifndef RECORDER_H
 #define RECORDER_H
@@ -17,14 +16,14 @@ enum {
     REC_DONE      = 2,
 };
 
-extern int16_t rec_buf[REC_SAMPLES * NUM_MICS];
-extern volatile uint8_t  g_rec_state;   /* REC_IDLE / REC_RECORDING / REC_DONE */
-extern volatile uint32_t g_rec_pos;     /* int16 values written so far */
+/* Start a new recording (overwrites the last one) */
+void recorder_start(void);
 
-/* Start a new recording (main loop). Overwrites the previous one. */
-void recorder_arm(void);
-
-/* Append one interleaved block of BLOCK_SAMPLES * NUM_MICS samples (DMA callback) */
+/* Add one block to the recording. Called by mic_capture for every block. */
 void recorder_push(const int16_t *block);
+
+extern int16_t rec_buf[REC_SAMPLES * NUM_MICS];
+extern volatile uint8_t  g_rec_state;    /* REC_IDLE, REC_RECORDING or REC_DONE */
+extern volatile uint32_t g_rec_pos;      /* samples written so far (all mics) */
 
 #endif /* RECORDER_H */

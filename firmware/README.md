@@ -2,12 +2,24 @@
 
 | Folder | Board | Capture path |
 |---|---|---|
-| `nucleo-proto/` | NUCLEO-H753ZI bench rig, 4 mics | PDM → SAI1 (PDM mode) → PDM2PCM ÷64 → 48 kHz |
+| `nucleo-proto/` | NUCLEO-H753ZI bench rig, 4 mics | PDM 1.536 MHz → SAI1 (PDM mode) → PDM2PCM ÷32 → 48 kHz |
 | `final/` | Custom 8-mic board, STM32H743 | 8 PDM mics → ADAU7118 → TDM8 → SAI |
 | `common/` | Both | No HAL calls: GCC-PHAT DOA, delay-and-sum beamformer, ring buffer |
 
 Board-specific code (capture, DMA callbacks, serial dump, the array geometry header) lives in each
 board's project. Anything that only does math goes in `common/` so it moves to the final board unchanged.
+
+## nucleo-proto app code (`nucleo-proto/App/`)
+
+| File | Job |
+|---|---|
+| `array_config.h` | Mic count, geometry, sample rate, block and recording sizes |
+| `app_main.c` | Called from `main.c`: starts capture, handles the button and LEDs |
+| `mic_capture.c` | SAI1 + DMA ping-pong buffer, PDM → PCM per mic, 1 ms blocks, debug meters |
+| `recorder.c` | Button-triggered recording of `REC_SECONDS` into `rec_buf` |
+
+SAI1 settings that matter for 4 PDM mics (CubeMX's defaults are wrong): frame length 32, 2 slots,
+first bit LSB, frame sync polarity **active high**, audio frequency 192 kHz.
 
 ## STM32CubeIDE setup
 
