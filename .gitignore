@@ -3,7 +3,7 @@ build/
 Debug/
 Release/
 *.elf
-#*.bin
+*.bin
 *.hex
 *.map
 *.list
