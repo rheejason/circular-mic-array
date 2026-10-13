@@ -13,7 +13,7 @@
 /* Audio */
 #define FS_HZ               48000U
 #define BLOCK_SAMPLES       48U         /* samples per mic per block = 1 ms at 48 kHz */
-#define PDM_DECIMATION      64U         /* 3.072 MHz PDM clock / 64 = 48 kHz */
+#define PDM_DECIMATION      32U         /* 3.072 MHz PDM clock / 64 = 48 kHz */
 
 /* PDM bytes for one block, all mics: 48 samples * 64 bits / 8 bits per byte * 4 mics = 1536 */
 #define PDM_BLOCK_BYTES     (BLOCK_SAMPLES * PDM_DECIMATION / 8U * NUM_MICS)

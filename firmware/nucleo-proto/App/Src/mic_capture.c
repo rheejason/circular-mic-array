@@ -81,7 +81,7 @@ static void process_half(uint16_t *half)
 #if RUN_PDM_FILTER
     uint8_t *pdm = (uint8_t *)half;
     for (uint32_t m = 0; m < NUM_MICS; m++) {
-        PDM_Filter(&pdm[m], &pcm_block[m], &pdm_handle[m]);
+        PDM_Filter(&pdm[m ^ 1U], &pcm_block[m], &pdm_handle[m]);
     }
     update_peaks();
     recorder_push(pcm_block);
@@ -108,7 +108,7 @@ int mic_capture_start(void)
             return -1;
         }
 
-        pdm_config[m].decimation_factor     = PDM_FILTER_DEC_FACTOR_64;
+        pdm_config[m].decimation_factor     = PDM_FILTER_DEC_FACTOR_32;
         pdm_config[m].output_samples_number = BLOCK_SAMPLES;
         pdm_config[m].mic_gain              = PDM_MIC_GAIN_DB;
         if (PDM_Filter_setConfig(&pdm_handle[m], &pdm_config[m]) != 0) {
