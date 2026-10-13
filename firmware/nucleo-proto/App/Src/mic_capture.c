@@ -21,7 +21,7 @@
 /* If one scratch shows on two meters or the order comes out 1,0,3,2, try PDM_FILTER_ENDIANNESS_BE */
 #define PDM_BIT_ORDER       PDM_FILTER_BIT_ORDER_MSB
 #define PDM_ENDIANNESS      PDM_FILTER_ENDIANNESS_LE
-#define PDM_MIC_GAIN_DB     24          /* lower this if g_peak sits at 32767 */
+#define PDM_MIC_GAIN_DB     0          /* lower this if g_peak sits at 32767 */
 #define PDM_HPF_TAP         2122358088U /* DC-blocking high-pass, ST example value */
 
 #define PEAK_HOLD_BLOCKS    100U        /* g_peak window: 100 blocks = 100 ms */
