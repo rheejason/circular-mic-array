@@ -5,6 +5,7 @@
 #include "array_config.h"
 #include "sai.h"
 #include "pdm2pcm_glo.h"
+#include "stream.h"
 
 #define PDM_GAIN_DB     0
 #define PDM_HPF_TAP     2122358088U             // high-pass that removes DC (ST's value)
@@ -67,7 +68,7 @@ static void process_block(uint16_t *half)   // runs in the DMA interrupt, once p
         PDM_Filter(&pdm[m ^ 1U], &pcm_block[m], &filter[m]);
     }
 
-    // stream_push(pcm_block);     // added in the streaming step
+    stream_push(pcm_block);     // added in the streaming step
 
     g_cb_count++;
     g_proc_cycles = DWT->CYCCNT - start;
