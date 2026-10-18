@@ -1,11 +1,5 @@
 /*
  * app_main.c
- * Starts capture, then handles the button and LEDs.
- *
- *   Blue button   start a recording
- *   Green LED     blinks while capture is running
- *   Yellow LED    on while recording
- *   Red LED       error (Error_Handler in main.c)
  */
 #include "app_main.h"
 #include "main.h"
