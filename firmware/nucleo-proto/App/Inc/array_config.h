@@ -1,6 +1,5 @@
 /*
  * array_config.h
- * Array geometry and audio settings. Keep in sync with the Python code.
  */
 #ifndef ARRAY_CONFIG_H
 #define ARRAY_CONFIG_H
@@ -12,13 +11,9 @@
 /* Audio: 1.536 MHz PDM clock / 32 = 48 kHz */
 #define FS_HZ               48000U
 #define PDM_DECIMATION      32U
-#define BLOCK_SAMPLES       48U     /* samples per mic per block (1 ms) */
+#define BLOCK_SAMPLES       48U     // samples per mic per block (1 ms)
 
-/* PDM bytes in one block, all mics: 48 samples x 32 bits / 8 x 4 mics = 768 */
+// PDM bytes in one block, all mics: 48 samples x 32 bits / 8 x 4 mics = 768
 #define PDM_BLOCK_BYTES     (BLOCK_SAMPLES * PDM_DECIMATION / 8U * NUM_MICS)
-
-/* RAM recording length (AXI SRAM fits about 1.3 s) */
-#define REC_SECONDS         1U
-#define REC_SAMPLES         (FS_HZ * REC_SECONDS)   /* per mic */
 
 #endif /* ARRAY_CONFIG_H */

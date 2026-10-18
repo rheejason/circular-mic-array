@@ -13,10 +13,9 @@ board's project. Anything that only does math goes in `common/` so it moves to t
 
 | File | Job |
 |---|---|
-| `array_config.h` | Mic count, geometry, sample rate, block and recording sizes |
-| `app_main.c` | Called from `main.c`: starts capture, handles the button and LEDs |
-| `mic_capture.c` | SAI1 + DMA ping-pong buffer, PDM → PCM per mic, 1 ms blocks, debug meters |
-| `recorder.c` | Button-triggered recording of `REC_SECONDS` into `rec_buf` |
+| `array_config.h` | Mic count, geometry, sample rate, block size |
+| `app_main.c` | Called from `main.c`: starts capture, blinks the green LED |
+| `mic_capture.c` | SAI1 + DMA ping-pong buffer, PDM → PCM per mic, 1 ms blocks |
 
 SAI1 settings that matter for 4 PDM mics (CubeMX's defaults are wrong): frame length 32, 2 slots,
 first bit LSB, frame sync polarity **active high**, audio frequency 192 kHz.
