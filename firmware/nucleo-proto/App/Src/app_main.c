@@ -17,8 +17,9 @@ void app_init(void)
 
 void app_loop(void)
 {
+	static uint32_t last_blink;
+
 	stream_task();
-    static uint32_t last_blink;
 
     if (g_cb_count - last_blink >= BLINK_BLOCKS) {    // green LED blinks while capture runs
         last_blink = g_cb_count;

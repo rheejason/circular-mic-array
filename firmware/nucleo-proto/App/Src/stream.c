@@ -28,7 +28,7 @@ volatile uint32_t g_stream_drops;
 /* Ring buffer */
 static packet_t ring[RING_LEN];
 static volatile uint32_t head;		// next slot to fill (interrupt changes this)
-static volatile uint32_t tail;		// oldest unset slot (main loop changes this)
+static volatile uint32_t tail;		// oldest unsent slot (main loop changes this)
 static uint32_t seq;
 static uint8_t sending;				// 1 while USB sending ring[tail]
 
