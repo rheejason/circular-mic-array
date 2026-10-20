@@ -22,7 +22,7 @@
 #define DOA_K				9U									// frames summed per update
 #define DOA_K_LO			7U									// ceil(300 * N_FFT / FS_HZ)
 #define DOA_K_HI			85U									// floor(4000 * N_FFT / FS_HZ)
-#define DOA_NB				(DOA_K_HI - DOA_K_LOW + 1U)			// 79 bins in band
+#define DOA_NB				(DOA_K_HI - DOA_K_LO + 1U)			// 79 bins in band
 #define NUM_PAIRS			(NUM_MICS * (NUM_MICS - 1U) / 2U)
 #define SPEED_OF_SOUND		343.0f
 #define DOA_MAX_SHIFT		14U									// 13 + 1 so parabola can get true delay max 12.59
