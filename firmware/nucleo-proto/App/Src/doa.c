@@ -67,7 +67,7 @@ void doa_push(const int16_t *block)			// runs in DMA interrupt, once per 1 ms
 				g_doa_overruns++;		// main loop never took last frame
 			}
 			__DMB();						// frame fully written before main loop can see
-			ready_buf = (int32_t)full_buf;	// tell main loop which bucket
+			ready_buf = (int32_t)fill_buf;	// tell main loop which bucket
 			fill_buf ^= 1U;					// switch to other bucket
 			fill_n = 0;						// start from beginning
 		}
@@ -99,9 +99,9 @@ static void accumulate(float *acc_p, const float *Wi, const float *Wj)
 {
 	for (uint32_t b=0; b<DOA_NB; b++) {				//b = 0..78 -> FFT bin k = DOA_K_LO + b
 		float ar = Wi[2*b], ai = Wi[2*b + 1];			// mic i's arrow for this bin
-		float br = Wj[2*b], ai = Wj[2*b + 1];			// mic j's arrow for this bin
-		acc_p[2*b] 	   += ar * br + ai * bi;			// Re{ W_i[k] * conj( W_i[k])
-		acc_p[2*b + 1] += ai * br - ar * bi;			// Re{ W_i[k] * conj( W_j[k])
+		float br = Wj[2*b], bi = Wj[2*b + 1];			// mic j's arrow for this bin
+		acc_p[2*b] 	   += ar * br + ai * bi;			// Re{ W_i[k] * conj(W_j[k]) }
+		acc_p[2*b + 1] += ai * br - ar * bi;			// Im{ W_i[k] * conj(W_j[k]) }
 	}
 }
 
@@ -156,7 +156,7 @@ static float pair_delay(const float *acc_p)
 	}
 
 	// 6. Back to lag in samples, then seconds;
-	flat lag_peak = (float)w_peak - (float)DOA_MAX_SHIFT + delta;
+	float lag_peak =(float)w_peak - (float)DOA_MAX_SHIFT + delta;
 
 	return lag_peak / (float)FS_HZ;
 }
@@ -199,6 +199,98 @@ static void estimate(void)
 	memset(acc, 0, sizeof acc);
 	level_sum = 0.0f;
 	n_frames = 0;
+}
+
+
+/* Setup */
+
+// Least squares: each pair gives tau_p = a_p . u with a_p = -(p_i - p_j) / c
+// u = (A^T A)^-1 A^T tau; A^T A is 2x2, so invert it directly
+static int ls_init(void)
+{
+	float px[NUM_MICS], py[NUM_MICS];				// mic positions (m)
+	float ax[NUM_PAIRS], ay[NUM_PAIRS];				// row p of A (s)
+	float sxx = 0.0f, sxy = 0.0f, syy = 0.0f;		// A^T A = [sxx sxy; sxy syy]
+	uint32_t p = 0;
+
+	for (uint32_t m=0; m<NUM_MICS; m++) {			// mic 0 at +x, counter-clockwise
+		float angle = 2.0f * PI * (float)m / (float)NUM_MICS;
+		px[m] = MIC_RADIUS_M * cosf(angle);
+		py[m] = MIC_RADIUS_M * sinf(angle);
+	}
+
+	for (uint32_t i=0; i<NUM_MICS; i++) {			// pairs (0,1) (0,2) (0,3) (1,2) (1,3) (2,3)
+		for (uint32_t j=i+1U; j<NUM_MICS; j++) {
+			pair_i[p] = (uint8_t)i;
+			pair_j[p] = (uint8_t)j;
+			ax[p] = -(px[i] - px[j]) / SPEED_OF_SOUND;
+			ay[p] = -(py[i] - py[j]) / SPEED_OF_SOUND;
+			sxx += ax[p] * ax[p];
+			sxy += ax[p] * ay[p];
+			syy += ay[p] * ay[p];
+			p++;
+		}
+	}
+
+	float det = sxx * syy - sxy * sxy;
+	if (det <= 0.0f) {
+		return -1;									// mics all on one line: no unique direction
+	}
+	for (p=0; p<NUM_PAIRS; p++) {					// ls = (A^T A)^-1 A^T, one column per pair
+		ls[0][p] = (syy * ax[p] - sxy * ay[p]) / det;
+		ls[1][p] = (sxx * ay[p] - sxy * ax[p]) / det;
+	}
+	return 0;
+}
+
+// A tone exactly on bin TEST_BIN must come out of the FFT on that bin (bring-up check, delete later)
+static int fft_selftest(void)
+{
+	float peak;
+	uint32_t idx;
+
+	for (uint32_t n=0; n<N_FFT; n++) {
+		fft_in[n] = sinf(2.0f * PI * (float)(TEST_BIN * n) / (float)N_FFT);
+	}
+	arm_rfft_fast_f32(&fft, fft_in, spec, 0);
+	arm_cmplx_mag_f32(spec + 2, cc, N_FFT / 2U - 1U);	// bins 1..511 (cc used as scratch)
+	arm_max_f32(cc, N_FFT / 2U - 1U, &peak, &idx);
+	return (idx + 1U == TEST_BIN) ? 0 : -1;				// idx 0 is bin 1
+}
+
+int doa_init(void)
+{
+	// search window must cover the largest delay across the array, +1 for the parabola
+	if (DOA_MAX_SHIFT < (uint32_t)ceilf(2.0f * MIC_RADIUS_M / SPEED_OF_SOUND * FS_HZ) + 1U) {
+		return -1;
+	}
+	if (arm_rfft_fast_init_f32(&fft, N_FFT) != ARM_MATH_SUCCESS) {
+		return -2;
+	}
+	if (fft_selftest() != 0) {
+		return -3;
+	}
+	return ls_init();
+}
+
+
+/* Main loop */
+
+void doa_task(void)
+{
+	int32_t b = ready_buf;
+	if (b < 0) {
+		return;										// no frame waiting
+	}
+	__DMB();										// read the frame only after seeing ready_buf
+
+	uint32_t start = DWT->CYCCNT;
+	add_frame(frames[b]);
+	ready_buf = -1;									// frame copied out, buffer free for the interrupt
+	if (n_frames == DOA_K) {
+		estimate();
+	}
+	g_doa_cycles = DWT->CYCCNT - start;
 }
 
 
