@@ -5,6 +5,7 @@
 | `kicad/` | 8-mic board KiCad project |
 | `mechanical/` | Bench rig ring and enclosure: STEP and 3MF exports (keep the Fusion source link in a note here) |
 | `bom/` | Bills of materials |
+| `layout-checklist.md` | What's left before and during PCB layout, and before ordering |
 
 ## 8-mic board (planned)
 
