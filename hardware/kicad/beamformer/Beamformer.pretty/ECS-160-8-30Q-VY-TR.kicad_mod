@@ -7,7 +7,7 @@
 	(property "Reference" "REF**"
 		(at 0.5 -2.8 0)
 		(layer "F.SilkS")
-		(uuid "416c2c0a-0489-44de-9c07-50c3116ec32c")
+		(uuid "76e70ebd-98ce-480f-9ac1-bb5b5f001ea5")
 		(effects
 			(font
 				(size 1 1)
@@ -18,7 +18,7 @@
 	(property "Value" "ECS-160-8-30Q-VY-TR"
 		(at 0 2.8 0)
 		(layer "F.Fab")
-		(uuid "b55aee93-ea36-4e34-9467-fd8058b28ac1")
+		(uuid "fa2e14d2-cdf1-4759-b48e-6f9b0660cb0b")
 		(effects
 			(font
 				(size 1 1)
@@ -30,7 +30,7 @@
 		(at 0 0 0)
 		(layer "F.Fab")
 		(hide yes)
-		(uuid "4ba8bc70-ec0b-4fec-9c3c-6a7f58f8b0e9")
+		(uuid "efec65f6-dd7f-4cfb-89e0-9a7093119f43")
 		(effects
 			(font
 				(size 1.27 1.27)
@@ -41,7 +41,7 @@
 		(at 0 0 0)
 		(layer "F.Fab")
 		(hide yes)
-		(uuid "72659e9a-a878-47af-96a2-cb1068faab3b")
+		(uuid "36fc3c98-382c-4954-8296-23ccc677b218")
 		(effects
 			(font
 				(size 1.27 1.27)
@@ -52,7 +52,7 @@
 		(at 0 0 0)
 		(layer "F.SilkS")
 		(hide yes)
-		(uuid "93daf826-04a5-4253-84af-22397bfadecd")
+		(uuid "ae69bb4e-1996-4ddf-81d4-18f4c623f598")
 		(effects
 			(font
 				(size 1 1)
@@ -71,19 +71,19 @@
 		)
 		(fill no)
 		(layer "F.CrtYd")
-		(uuid "a791079c-3e14-4f75-bb7b-0aa278e792d3")
+		(uuid "922aed8d-5d5e-4ae0-bf43-cb733ce06e3d")
 	)
 	(pad "1" smd rect
-		(at -2.15 0)
-		(size 1.9 2.2)
+		(at -2.05 0)
+		(size 1.9 2.4)
 		(layers "F.Cu" "F.Mask" "F.Paste")
-		(uuid "702e491e-01db-44ce-89d8-5fa69fdc81d7")
+		(uuid "dcd02c23-d8bf-46af-a1be-f2a43aeca1e4")
 	)
 	(pad "2" smd rect
-		(at 2.15 0)
-		(size 1.9 2.2)
+		(at 2.05 0)
+		(size 1.9 2.4)
 		(layers "F.Cu" "F.Mask" "F.Paste")
-		(uuid "e904dc28-7137-4042-99da-f35dd5b7fcdd")
+		(uuid "08454f65-15eb-441e-8dbf-74bf12ef002a")
 	)
 	(embedded_fonts no)
 	(model "${KICAD10_3DMODEL_DIR}/Crystal.3dshapes/Crystal_SMD_5032-2Pin_5.0x3.2mm.step"
