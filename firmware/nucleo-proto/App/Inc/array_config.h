@@ -16,4 +16,17 @@
 // PDM bytes in one block, all mics: 48 samples x 32 bits / 8 x 4 mics = 768
 #define PDM_BLOCK_BYTES     (BLOCK_SAMPLES * PDM_DECIMATION / 8U * NUM_MICS)
 
+/* DOA */
+#define FRAME_LEN			512U								// samples per mic per DOA frame (10.7 ms)
+#define N_FFT				(2U * FRAME_LEN)					// zero-padded so correlation doesn't wrap
+#define DOA_K				9U									// frames summed per update
+#define DOA_K_LO			7U									// ceil(300 * N_FFT / FS_HZ)
+#define DOA_K_HI			85U									// floor(4000 * N_FFT / FS_HZ)
+#define DOA_NB				(DOA_K_HI - DOA_K_LOW + 1U)			// 79 bins in band
+#define NUM_PAIRS			(NUM_MICS * (NUM_MICS - 1U) / 2U)
+#define SPEED_OF_SOUND		343.0f
+#define DOA_MAX_SHIFT		14U									// 13 + 1 so parabola can get true delay max 12.59
+#define DOA_GATE_DB			10.0f
+#define DOA_FLOOR_RISE_DB	0.05f
+
 #endif /* ARRAY_CONFIG_H */
