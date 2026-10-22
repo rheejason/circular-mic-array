@@ -29,4 +29,9 @@
 #define DOA_GATE_DB			10.0f
 #define DOA_FLOOR_RISE_DB	0.05f
 
+/* Beamformer (STFT, 50% overlap) */
+#define BF_FFT				512U								// samples per frame = FFT size (10.7ms)
+#define BF_HOP				(BF_FFT / 2U)						// new frame every 256 samples (5.3ms)
+#define BF_BINS				(BF_FFT / 2U)						// complex slots in packed spectrum (slot 0 = DC + Nyquist)
+
 #endif /* ARRAY_CONFIG_H */
