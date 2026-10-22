@@ -15798,7 +15798,7 @@
 				(justify right)
 			)
 		)
-		(property "Footprint" "Connector_USB:USB_C_Receptacle_GCT_USB4085"
+		(property "Footprint" "Beamformer:USB_C_Receptacle_GCT_USB4085"
 			(at 334.01 86.36 0)
 			(hide yes)
 			(show_name no)

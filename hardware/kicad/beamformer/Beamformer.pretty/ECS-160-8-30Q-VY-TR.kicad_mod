@@ -7,7 +7,7 @@
 	(property "Reference" "REF**"
 		(at 0.5 -2.8 0)
 		(layer "F.SilkS")
-		(uuid "76e70ebd-98ce-480f-9ac1-bb5b5f001ea5")
+		(uuid "e9b718cd-cae3-4007-9a97-e98928522567")
 		(effects
 			(font
 				(size 1 1)
@@ -18,7 +18,7 @@
 	(property "Value" "ECS-160-8-30Q-VY-TR"
 		(at 0 2.8 0)
 		(layer "F.Fab")
-		(uuid "fa2e14d2-cdf1-4759-b48e-6f9b0660cb0b")
+		(uuid "0ea51606-5289-4237-b9a4-06de5b13f9a7")
 		(effects
 			(font
 				(size 1 1)
@@ -30,7 +30,7 @@
 		(at 0 0 0)
 		(layer "F.Fab")
 		(hide yes)
-		(uuid "efec65f6-dd7f-4cfb-89e0-9a7093119f43")
+		(uuid "496a73a9-cb26-4347-a391-b1ddeac49f66")
 		(effects
 			(font
 				(size 1.27 1.27)
@@ -41,7 +41,7 @@
 		(at 0 0 0)
 		(layer "F.Fab")
 		(hide yes)
-		(uuid "36fc3c98-382c-4954-8296-23ccc677b218")
+		(uuid "2417c9eb-80fb-485d-9b40-11465eafced8")
 		(effects
 			(font
 				(size 1.27 1.27)
@@ -52,7 +52,7 @@
 		(at 0 0 0)
 		(layer "F.SilkS")
 		(hide yes)
-		(uuid "ae69bb4e-1996-4ddf-81d4-18f4c623f598")
+		(uuid "a4ee55b9-ac0f-4dae-b7a7-2120322ee35a")
 		(effects
 			(font
 				(size 1 1)
@@ -62,6 +62,26 @@
 	)
 	(attr smd)
 	(duplicate_pad_numbers_are_jumpers no)
+	(fp_line
+		(start -2.5 -1.8)
+		(end 2.5 -1.8)
+		(stroke
+			(width 0.1)
+			(type default)
+		)
+		(layer "F.SilkS")
+		(uuid "abdaaad5-ced9-4b85-b0eb-288a93cdb66a")
+	)
+	(fp_line
+		(start -2.5 1.8)
+		(end 2.5 1.8)
+		(stroke
+			(width 0.1)
+			(type default)
+		)
+		(layer "F.SilkS")
+		(uuid "ce3027df-2c85-4eb8-b1d3-fdb5ceabdc94")
+	)
 	(fp_rect
 		(start -3.4 -1.9)
 		(end 3.4 1.9)
@@ -71,19 +91,19 @@
 		)
 		(fill no)
 		(layer "F.CrtYd")
-		(uuid "922aed8d-5d5e-4ae0-bf43-cb733ce06e3d")
+		(uuid "75c8218f-f77d-45c0-a127-3060aa9c8cba")
 	)
 	(pad "1" smd rect
 		(at -2.05 0)
 		(size 1.9 2.4)
 		(layers "F.Cu" "F.Mask" "F.Paste")
-		(uuid "dcd02c23-d8bf-46af-a1be-f2a43aeca1e4")
+		(uuid "5f441594-63c0-4436-9daf-514b30a1cc15")
 	)
 	(pad "2" smd rect
 		(at 2.05 0)
 		(size 1.9 2.4)
 		(layers "F.Cu" "F.Mask" "F.Paste")
-		(uuid "08454f65-15eb-441e-8dbf-74bf12ef002a")
+		(uuid "cc7caf1f-8de3-4bca-a4a0-751df3154825")
 	)
 	(embedded_fonts no)
 	(model "${KICAD10_3DMODEL_DIR}/Crystal.3dshapes/Crystal_SMD_5032-2Pin_5.0x3.2mm.step"
