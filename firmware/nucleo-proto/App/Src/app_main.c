@@ -14,6 +14,10 @@ volatile uint32_t g_beam_follow_doa;	// set to 1 in Live Expressions: beam point
 
 void app_init(void)
 {
+	// D-cache: our DSP buffers live in AXI SRAM, which is slow uncached. The only DMA buffer
+	// (pdm_buf) is invalidated before each read in mic_capture.c; USB FS uses no DMA.
+	SCB_EnableDCache();
+
 	if (doa_init() != 0 || beam_init() != 0) {
 		Error_Handler();
 	}

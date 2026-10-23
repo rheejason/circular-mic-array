@@ -66,6 +66,10 @@ static void process_block(uint16_t *half)   // runs in the DMA interrupt, once p
     uint32_t start = DWT->CYCCNT;
     uint8_t *pdm = (uint8_t *)half;
 
+    // DMA wrote this half straight to RAM; drop any stale cached copy before reading it
+    // (half is 32-byte aligned and 768 bytes = 24 cache lines)
+    SCB_InvalidateDCache_by_Addr((uint32_t *)half, PDM_BLOCK_BYTES);
+
     // Bytes arrive as mic 1, 0, 3, 2 (SEL=3V3 mic first on each line); m ^ 1 puts them in order
     for (uint32_t m = 0; m < NUM_MICS; m++) {
         PDM_Filter(&pdm[m ^ 1U], &pcm_block[m], &filter[m]);
