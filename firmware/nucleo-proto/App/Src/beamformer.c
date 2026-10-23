@@ -47,3 +47,124 @@ static int16_t out_q15[BF_HOP];
 static int16_t out_fifo[OUT_LEN];
 static volatile uint32_t out_wr, out_rd;	// total samples written / read; index = count % OUT_LEN
 static uint32_t primed;						// 1 while output is playing (interrupt only)
+
+
+/* Framing */
+
+void beam_push(const int16_t *block)
+{
+	for (uint32_t n=0; n<BLOCK_SAMPLES; n++) {
+		for (uint32_t m=0; m<NUM_MICS; m++) {
+			int16_t s = block[n * NUM_MICS + m];
+			hops[fill_buf][m][fill_n] = s / 32768.0f;
+		}
+		fill_n += 1;
+		if (fill_n == BF_HOP) {
+			if (ready_buf >= 0) {
+				g_beam_overruns++;		// main loop never took last hop
+			}
+			__DMB();
+			ready_buf = (int32_t)fill_buf;
+			fill_buf ^= 1U;
+			fill_n = 0;
+		}
+	}
+}
+
+
+/* Output Fifo */
+
+static void out_write(const int16_t *src)
+{
+	if (OUT_LEN - (out_wr - out_rd) < BF_HOP) {
+		return;			// no room, interrupt isn't reading
+	}
+	for (uint32_t n=0; n<BF_HOP; n++) {
+		out_fifo[(out_wr + n) % OUT_LEN] = src[n];
+	}
+	__DMB();			// samples written before interrupt can see them
+	out_wr += BF_HOP;
+}
+
+void beam_pop(int16_t *dst)
+{
+	uint32_t level = out_wr - out_rd;
+
+	if (primed && level < BLOCK_SAMPLES) {
+		g_beam_underruns++;
+		primed = 0;
+	}
+	if (!primed && level >= OUT_PREFILL) {
+		primed = 1;
+	}
+	if (!primed) {
+		memset(dst, 0, BLOCK_SAMPLES * sizeof(int16_t));
+		return;
+	}
+	for (uint32_t n=0; n<BLOCK_SAMPLES; n++) {
+		dst[n] = out_fifo[(out_rd + n) % OUT_LEN];
+	}
+	out_rd += BLOCK_SAMPLES;
+}
+
+
+/* Delay-and-sum */
+
+// Weights for a talker at az_deg
+static void steer(float az_deg)
+{
+	float az = az_deg * (PI / 180.0f);
+	float ux = cosf(az), uy = sinf(az);			// unit vector toward talker
+
+	for (uint32_t m=0; m<NUM_MICS; m++) {
+		float tau = (ux * px[m] + uy * py[m]) / SPEED_OF_SOUND;
+		float *w = weights[m];
+
+		w[0] = 1.0f / (float)NUM_MICS;
+		w[1] = 0.0f;
+		for (uint32_t k=1; k<BF_BINS; k++) {
+			float f = (float)k * (float)FS_HZ / (float)BF_FFT;
+			float phase = -2.0f * PI * f * tau;			// delay by tau
+			w[2U*k]		 = cosf(phase) / float(NUM_MICS);
+			w[2U*k + 1U] = sinf(phase) / float(NUM_MICS);
+		}
+	}
+	steered_az = az_deg;
+}
+
+// One hop: 256 new samples per mic in, 256 beam samples out
+static void process_hop(float hop[NUM_MICS][BF_HOP])
+{
+	// 1. Each mic: [previous hop | this hop] x window -> FFT -> x weights -> add into Y
+	memset(Y, 0, sizeof Y);
+	for (uint32_t m=0; m<NUM_MICS; m++) {
+		for (uint32_t n=0; n<BF_HOP; n++) {
+			fft_in[n]		   = prev[m][n] * win[n];
+			fft_in[BF_HOP + n] = hop[m][n] * win[BF_HOP + n];
+		}
+		memcpy(prev[m], hop[m], sizeof prev[m]);
+
+		arm_rfft_fast_f32(&fft, fft_in, spec, 0);
+		arm_cmplx_mult_cmplx_f32(spec, weights[m], prod, BF_BINS);
+		arm_add_f32(Y, prod, Y, BF_FFT);
+	}
+
+	// 2. Back to time, window again, overlap-add with last frame's second half
+	arm_rfft_fast_f32(&fft, Y, y, 1);
+	arm_mult_f32(y, win, y ,BF_FFT);
+	for (uint32_t n=0; n<BF_HOP; n++) {
+		out[n] = tail[n] + y[n];
+		tail=[n] = y[BF_HOP + n];
+	}
+
+	// 3. To int16 (clips at +1), into the output FIFO
+	arm_float_to_q15(out, out_q15, BF_HOP);
+	out_write(out_q15);
+}
+
+
+/* Setup */
+int beam_init(void)
+{
+	if ()
+}
