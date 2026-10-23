@@ -3,8 +3,8 @@
     python python/tools/beam_check.py look0 look180
 
 Per band: how much quieter the beam got when pointed away. Each recording's beam level is
-measured relative to the average of its 4 mics, so a source that got a bit louder or quieter
-between the two recordings doesn't matter (the mics don't depend on where the beam points).
+measured relative to the average level of a single mic, so a source that got a bit louder or
+quieter between the two recordings doesn't matter (the mics don't depend on where the beam points).
 """
 import sys
 from pathlib import Path
@@ -24,18 +24,24 @@ def load(name):
     good = ~np.all(blocks[:, :, :NUM_MICS] == 0, axis=(1, 2)) & ~np.all(blocks[:, :, NUM_MICS] == 0, axis=1)
     print(f"{name}: {good.mean() * 100:.1f}% of blocks usable")
     a = blocks[good].reshape(-1, a.shape[1])        # drop USB gaps and beam dropouts
-    return a[:, :NUM_MICS].mean(axis=1), a[:, NUM_MICS]
+    return a[:, :NUM_MICS], a[:, NUM_MICS]
 
 
-def band_db(x, lo, hi):
+def band_power(x, lo, hi):
     X = np.fft.rfft(x)
     f = np.fft.rfftfreq(len(x), 1 / FS)
-    return 10 * np.log10(np.sum(np.abs(X[(f >= lo) & (f < hi)]) ** 2) + 1e-20)
+    return np.sum(np.abs(X[(f >= lo) & (f < hi)]) ** 2) + 1e-20
 
 
 def beam_vs_mics(name):
-    mic, beam = load(name)
-    return [band_db(beam, lo, hi) - band_db(mic, lo, hi) for lo, hi in BANDS]
+    # Reference = average power of the single mics (what one mic hears), not the power of the
+    # summed mics: an unaligned sum is itself a beam pointed straight up and loses highs
+    mics, beam = load(name)
+    out = []
+    for lo, hi in BANDS:
+        ref = np.mean([band_power(mics[:, m], lo, hi) for m in range(NUM_MICS)])
+        out.append(10 * np.log10(band_power(beam, lo, hi) / ref))
+    return out
 
 
 def main():
@@ -45,7 +51,7 @@ def main():
     print(f"\n{'band (Hz)':>12}  {'toward':>7}  {'away':>7}  {'rejection':>9}")
     for (lo, hi), t, a in zip(BANDS, toward, away):
         print(f"{lo:>5}-{hi:<6}  {t:+6.1f}  {a:+6.1f}  {a - t:+8.1f} dB")
-    print("\ntoward/away = beam level minus mic-average level. Toward should be ~0 dB;"
+    print("\ntoward/away = beam level minus single-mic level. Toward should be ~0 dB;"
           "\nrejection should be negative, largest around 1.5-2.5 kHz.")
 
 
