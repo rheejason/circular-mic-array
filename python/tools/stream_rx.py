@@ -18,11 +18,12 @@ from serial.tools import list_ports
 
 # Must match the firmware (array_config.h, stream.c)
 NUM_MICS = 4
+NUM_CH = NUM_MICS + 1                                           # 4 mics + beam
 BLOCK_SAMPLES = 48
 FS = 48000
-MAGIC = b"MIC4"
+MAGIC = b"MICB"
 HEADER = struct.Struct("<4sI")                                  # magic, seq
-PACKET_BYTES = HEADER.size + BLOCK_SAMPLES * NUM_MICS * 2       # 392
+PACKET_BYTES = HEADER.size + BLOCK_SAMPLES * NUM_CH * 2         # 488
 
 WARMUP_PACKETS = 50     # skip blocks that sat in the board's ring while the port was closed
 NO_DATA_TIMEOUT = 2.0   # seconds without any bytes before giving up
@@ -52,7 +53,7 @@ def read_some(ser, last_data):
 
 
 def packets(ser, stats):
-    """Yield (seq, pcm[48, 4]) per packet. Resyncs on MAGIC if the byte stream gets out of step."""
+    """Yield (seq, pcm[48, 5]: mic 0..3, beam) per packet. Resyncs on MAGIC if the byte stream gets out of step."""
     buf = bytearray()
     last_data = time.monotonic()
     while True:
@@ -72,8 +73,9 @@ def packets(ser, stats):
             pkt = bytes(buf[i:i + PACKET_BYTES])
             del buf[:i + PACKET_BYTES]
             _, seq = HEADER.unpack_from(pkt)
-            pcm = np.frombuffer(pkt, dtype="<i2", offset=HEADER.size).reshape(BLOCK_SAMPLES, NUM_MICS)
-            yield seq, pcm
+            mics = np.frombuffer(pkt, dtype="<i2", count=BLOCK_SAMPLES * NUM_MICS, offset=HEADER.size)
+            beam = np.frombuffer(pkt, dtype="<i2", offset=HEADER.size + BLOCK_SAMPLES * NUM_MICS * 2)
+            yield seq, np.column_stack([mics.reshape(BLOCK_SAMPLES, NUM_MICS), beam])
 
 
 def receive(ser, seconds):
@@ -104,9 +106,10 @@ def print_stats(stats, seconds):
 
 
 def print_levels(audio):
-    for m in range(NUM_MICS):
-        ch = audio[:, m].astype(float)
-        print(f"  mic {m}: rms {ch.std():8.1f}   peak {np.abs(ch).max():6.0f}")
+    for c in range(NUM_CH):
+        ch = audio[:, c].astype(float)
+        name = f"mic {c}" if c < NUM_MICS else "beam "
+        print(f"  {name}: rms {ch.std():8.1f}   peak {np.abs(ch).max():6.0f}")
 
 
 def write_wav(path, samples):
@@ -147,9 +150,10 @@ def cmd_record(ser, seconds, name):
 
     CAPTURES.mkdir(parents=True, exist_ok=True)
     np.save(CAPTURES / f"{name}.npy", audio)
-    write_wav(CAPTURES / f"{name}_{NUM_MICS}ch.wav", audio)
+    write_wav(CAPTURES / f"{name}_{NUM_MICS}ch.wav", audio[:, :NUM_MICS])
     for m in range(NUM_MICS):
         write_wav(CAPTURES / f"{name}_mic{m}.wav", audio[:, m])
+    write_wav(CAPTURES / f"{name}_beam.wav", audio[:, NUM_MICS])
     print(f"saved {CAPTURES / name}.npy and .wav files")
 
 

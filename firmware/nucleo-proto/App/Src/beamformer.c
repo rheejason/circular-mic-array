@@ -125,8 +125,8 @@ static void steer(float az_deg)
 		for (uint32_t k=1; k<BF_BINS; k++) {
 			float f = (float)k * (float)FS_HZ / (float)BF_FFT;
 			float phase = -2.0f * PI * f * tau;			// delay by tau
-			w[2U*k]		 = cosf(phase) / float(NUM_MICS);
-			w[2U*k + 1U] = sinf(phase) / float(NUM_MICS);
+			w[2U*k]		 = cosf(phase) / (float)NUM_MICS;
+			w[2U*k + 1U] = sinf(phase) / (float)NUM_MICS;
 		}
 	}
 	steered_az = az_deg;
@@ -154,7 +154,7 @@ static void process_hop(float hop[NUM_MICS][BF_HOP])
 	arm_mult_f32(y, win, y ,BF_FFT);
 	for (uint32_t n=0; n<BF_HOP; n++) {
 		out[n] = tail[n] + y[n];
-		tail=[n] = y[BF_HOP + n];
+		tail[n] = y[BF_HOP + n];
 	}
 
 	// 3. To int16 (clips at +1), into the output FIFO
@@ -164,7 +164,41 @@ static void process_hop(float hop[NUM_MICS][BF_HOP])
 
 
 /* Setup */
+
 int beam_init(void)
 {
-	if ()
+	if (arm_rfft_fast_init_f32(&fft, BF_FFT) != ARM_MATH_SUCCESS) {
+		return -1;
+	}
+	for (uint32_t n=0; n<BF_FFT; n++) {		// sqrt(Hann) = half a sine; win^2 at 50% overlap sums to 1
+		win[n] = sinf(PI * (float)n / (float)BF_FFT);
+	}
+	for (uint32_t m=0; m<NUM_MICS; m++) {	// mic 0 at +x, counter-clockwise (same as doa.c)
+		float angle = 2.0f * PI * (float)m / (float)NUM_MICS;
+		px[m] = MIC_RADIUS_M * cosf(angle);
+		py[m] = MIC_RADIUS_M * sinf(angle);
+	}
+	steer(g_beam_az);
+	return 0;
+}
+
+
+/* Main loop */
+
+void beam_task(void)
+{
+	int32_t b = ready_buf;
+	if (b < 0) {
+		return;								// no hop waiting
+	}
+	__DMB();								// read the hop only after seeing ready_buf
+
+	uint32_t start = DWT->CYCCNT;
+	float az = g_beam_az;
+	if (az != steered_az) {
+		steer(az);							// new angle from the debugger or the DOA
+	}
+	process_hop(hops[b]);
+	ready_buf = -1;							// hop buffer free for the interrupt
+	g_beam_cycles = DWT->CYCCNT - start;
 }

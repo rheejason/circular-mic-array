@@ -7,6 +7,7 @@
 #include "pdm2pcm_glo.h"
 #include "stream.h"
 #include "doa.h"
+#include "beamformer.h"
 
 #define PDM_GAIN_DB     0
 #define PDM_HPF_TAP     2122358088U             // high-pass that removes DC (ST's value)
@@ -22,6 +23,7 @@ volatile uint32_t g_sai_err_count;
 /* Buffers */
 static uint16_t pdm_buf[BUF_WORDS] __attribute__((aligned(32)));    // DMA target (AXI SRAM, not DTCM)
 static int16_t  pcm_block[BLOCK_SAMPLES * NUM_MICS];                // 1 ms of audio: m0 m1 m2 m3 m0 ...
+static int16_t  beam_block[BLOCK_SAMPLES];                          // 1 ms of beam output (mono)
 
 static PDM_Filter_Handler_t filter[NUM_MICS];
 static PDM_Filter_Config_t  filter_cfg[NUM_MICS];
@@ -69,7 +71,9 @@ static void process_block(uint16_t *half)   // runs in the DMA interrupt, once p
         PDM_Filter(&pdm[m ^ 1U], &pcm_block[m], &filter[m]);
     }
 
-    stream_push(pcm_block);
+    beam_push(pcm_block);                   // feed the beamformer
+    beam_pop(beam_block);                   // 1 ms of its output (~20 ms behind the mics)
+    stream_push(pcm_block, beam_block);
     doa_push(pcm_block);
 
     g_cb_count++;

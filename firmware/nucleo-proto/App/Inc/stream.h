@@ -10,7 +10,7 @@
 
 #include <stdint.h>
 
-void stream_push(const int16_t *block);	 // add one 1 ms block (called from audio interrupt)
+void stream_push(const int16_t *block, const int16_t *beam);	 // add 1 ms of mics + beam (called from audio interrupt)
 void stream_task(void);					 // send waiting blocks over USB (called from main loop)
 
 /* Debug values (Live Expressions) */

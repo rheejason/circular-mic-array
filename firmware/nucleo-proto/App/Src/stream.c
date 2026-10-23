@@ -11,13 +11,14 @@
 #include "usbd_cdc_if.h"
 
 #define RING_LEN	32U				// packets in the ring = 32 ms of audio
-#define MAGIC		0x3443494DU		// bytes "MIC4", marks start of each packet
+#define MAGIC		0x4243494DU		// bytes "MICB" (mics + beam), marks start of each packet
 
 typedef struct {
 	uint32_t magic;
 	uint32_t seq;
-	int16_t pcm[BLOCK_SAMPLES * NUM_MICS];
-} packet_t;
+	int16_t pcm[BLOCK_SAMPLES * NUM_MICS];	// m0 m1 m2 m3 m0 ...
+	int16_t beam[BLOCK_SAMPLES];			// beamformer output
+} packet_t;									// 488 bytes
 
 
 extern USBD_HandleTypeDef hUsbDeviceFS;
@@ -44,7 +45,7 @@ static int usb_busy(void)
 
 /* Public functions */
 
-void stream_push(const int16_t *block)
+void stream_push(const int16_t *block, const int16_t *beam)
 {
 	uint32_t next = (head + 1U) % RING_LEN;
 
@@ -57,6 +58,7 @@ void stream_push(const int16_t *block)
 	ring[head].magic = MAGIC;
 	ring[head].seq = seq++;
 	memcpy(ring[head].pcm, block, sizeof ring[head].pcm);
+	memcpy(ring[head].beam, beam, sizeof ring[head].beam);
 	head = next;
 }
 
