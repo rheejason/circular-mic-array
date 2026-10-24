@@ -4,4 +4,5 @@
 	(lib (name "T5838") (type "KiCad") (uri "C:/Users/sstim/Downloads/MMICT5838-00-012/T5838.kicad_sym") (options "") (descr ""))
 	(lib (name "ADAU7118") (type "KiCad") (uri "C:/Users/sstim/Downloads/ul_ADAU7118ACPZRL/KiCADv6/ADAU7118.kicad_sym") (options "") (descr ""))
 	(lib (name "SN74AXC4T774PWR") (type "KiCad") (uri "C:/Users/sstim/Downloads/ul_SN74AXC4T774PWR/KiCADv6/SN74AXC4T774PWR.kicad_sym") (options "") (descr ""))
+	(lib (name "USB4145-03-0170-C") (type "KiCad") (uri "C:/Users/sstim/Downloads/LIB_USB4145-03-0170-C/USB4145-03-0170-C/KiCad/USB4145-03-0170-C.kicad_sym") (options "") (descr ""))
 )
