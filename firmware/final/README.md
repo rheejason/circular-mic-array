@@ -7,7 +7,7 @@ the SAI setup and `mic_capture.c` change.
 
 | Setting | nucleo-proto | final board |
 |---|---|---|
-| HSE | 8 MHz bypass (ST-LINK MCO) | **16 MHz crystal** (HSE "Crystal/Ceramic Resonator") |
+| HSE | 8 MHz bypass (ST-LINK MCO) | **16 MHz crystal** (HSE "Crystal/Ceramic Resonator" → `RCC_HSE_ON`). Left on BYPASS the crystal never starts, `HAL_RCC_OscConfig` fails and the board hangs in `Error_Handler` |
 | PLL1 | M = 1, N = 120, P = 2 → 480 MHz | **M = 2**, N = 120, P = 2 → 480 MHz (same VCO, 8 MHz input) |
 | PLL3 → SAI1 | M = 2, N = 49, FRACN = 1245, P = 4 → 49.152 MHz | **M = 4**, N = 49, FRACN = 1245, P = 4 → 49.152 MHz (−0.45 ppm) |
 | USB clock | HSI48 + CRS synced to USB SOF | unchanged |
@@ -17,7 +17,21 @@ the SAI setup and `mic_capture.c` change.
 | SAI1 block A | PDM, 4 mics | **Master receive, free protocol, TDM-8** (below) |
 | Pins | PE2 CK1, PE4 D2, PE6 D1 | **PE4 SAI1_FS_A, PE5 SAI1_SCK_A, PE6 SAI1_SD_A**, MCLK off, GPIO speed high |
 | LEDs | LD1 PB0, LD3 PB14 | same pins if the board LEDs are added there |
-| I2C1 | — | PB6 SCL, PB7 SDA, 400 kHz (TLC59116F at 0x60) |
+| USART3 (debug) | PD8 TX, PD9 RX (ST-LINK VCP) | **PB10 TX, PB11 RX** on J3 pins 6 / 5; use a 3.3 V USB-serial adapter |
+| I2C1 | — | PB6 SCL, PB7 SDA, 400 kHz (TLC59116F at 7-bit 0x60, HAL address 0xC0) |
+| DMA for SAI1_A | halfword | **word** (32-bit) on both sides, circular |
+| Nucleo-only pins | ETH (PA1/2/7, PB13, PC1/4/5, PG11/13), LSE (PC14/15), PC13 button, PE1 LED, PD10, PG7 | remove; nothing is connected to them on the board |
+| SYS → Debug | not set | **Serial Wire**, so PA13/PA14 can never be reassigned |
+| USB descriptor | self-powered, 100 mA | `USBD_SELF_POWERED 0`, `USBD_MAX_POWER 0xFA` (500 mA); board is bus-powered |
+| D-cache | off | keep off (or clean/invalidate the DMA buffer if you turn it on) |
+
+## TLC59116F start-up
+
+Power-up state: MODE1 SLEEP = 1 (oscillator off) and LEDOUT0–3 = 0 (all LEDs off). To use it:
+1. Write MODE1 (00h) = 0x00 to start the oscillator; wait at least 500 µs.
+2. Write LEDOUT0–3 (14h–17h) = 0xAA so each LED follows its PWMx register (02h–11h), then set PWMx = 0–255.
+
+LED k (OUTk, register PWM0 + k) sits at 281.25° + 22.5°·k, counter-clockwise from MK3 (0°).
 
 ## SAI1 block A for the ADAU7118
 
@@ -61,6 +75,18 @@ for (uint32_t n = 0; n < BLOCK_SAMPLES; n++) {
     }
 }
 ```
+
+**The board is mounted upside down** (sound holes face up, like an Echo). Seen from above, the layout is mirrored, so
+counter-clockwise order flips. If it's flipped left-to-right (MK1 stays at the top), use this table instead, with
+mic m at 45·m degrees counter-clockwise from +x as seen from above:
+
+```c
+// m:    0    1    2    3    4    5    6    7
+// MK:   MK7  MK8  MK1  MK2  MK3  MK4  MK5  MK6
+static const uint8_t slot_of_mic[NUM_MICS] = {7, 6, 1, 0, 3, 2, 5, 4};
+```
+
+Seen from above, LED OUTk is then at 258.75° − 22.5°·k (the ring runs clockwise). Mark the "front" on the enclosure.
 
 Confirm `slot_of_mic` with a tap test (tap each mic, check which channel spikes). The first 64 frames after the
 clocks start are silent (ADAU7118 start-up), so ignore the first few blocks.
