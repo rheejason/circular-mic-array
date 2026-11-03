@@ -18,8 +18,10 @@
 
 /* Debug values */
 volatile float 	  g_doa_az;
+/* volatile float g_doa_az_ls; */				// old least squares, not used
+float 			  g_srp_map[SRP_N_ANGLES];
 volatile uint32_t g_doa_valid;
-volatile float 	  g_doa_tau_us[NUM_PAIRS];
+/* volatile float g_doa_tau_us[NUM_PAIRS]; */	// old least squares, not used
 volatile float 	  g_doa_level_db;
 volatile float 	  g_doa_floor_db;
 volatile uint32_t g_doa_updates;
@@ -43,8 +45,13 @@ static float acc[NUM_PAIRS][2U * DOA_NB];
 static uint8_t pair_i[NUM_PAIRS], pair_j[NUM_PAIRS];
 static uint32_t n_frames;
 
-/* Least squares: u_xy = ls * tau */
-static float ls[2][NUM_PAIRS];
+/* Old least squares, not used: u_xy = ls * tau */
+/* static float ls[2][NUM_PAIRS]; */
+
+/* SRP-PHAT */
+static float pair_ax[NUM_PAIRS], pair_ay[NUM_PAIRS];	// tau_p = pair_ax * ux + pair_ay * uy (s)
+static float corr[NUM_PAIRS][DOA_WIN];					// each pair's correlation at lags -14..+14
+static float srp_idx[SRP_N_ANGLES][NUM_PAIRS];			// where angle d says pair p's peak should be (index into corr)
 
 /* Energy gate */
 static float level_sum;
@@ -120,13 +127,9 @@ static void add_frame(float frame[NUM_MICS][FRAME_LEN])
 	n_frames++;
 }
 
-// One pair: inverse FFT of 9-frame sum -> correlation -> peak lag -> delay in seconds
-static float pair_delay(const float *acc_p)
+// One pair: inverse FFT of 9-frame sum -> correlation at lags -14..+14
+static void pair_corr(const float *acc_p, float *corr_p)
 {
-	float win[2U * DOA_MAX_SHIFT + 1U];			// correlation at lags -14..+14 (29 vals)
-	float peak;
-	uint32_t w_peak;
-
 	// 1. Rebuild full packed spectrum: acc_p for bins 7..85 and zeros else
 	memset(fft_in, 0, sizeof fft_in);
 	memcpy(fft_in + 2U * DOA_K_LO, acc_p, 2U * DOA_NB * sizeof(float));
@@ -134,31 +137,94 @@ static float pair_delay(const float *acc_p)
 	// 2. Inverse FFT: cc[n] = how well mic i and mic j match at lag n
 	arm_rfft_fast_f32(&fft, fft_in, cc, 1);
 
-	// 3. Copy lags -14..+14 into win[0..28] in order
-	for (uint32_t w=0; w<2U*DOA_MAX_SHIFT+1U; w++) {
+	// 3. Copy lags -14..+14 into corr_p[0..28] in order
+	for (uint32_t w=0; w<DOA_WIN; w++) {
 		int32_t lag = (int32_t)w - (int32_t)DOA_MAX_SHIFT;
-		win[w] = cc[(lag + (int32_t)N_FFT) % (int32_t)N_FFT];		// negative lags sit at end of cc
+		corr_p[w] = cc[(lag + (int32_t)N_FFT) % (int32_t)N_FFT];		// negative lags sit at end of cc
 	}
+}
 
-	// 4. Highest point
-	arm_max_f32(win, 2U*DOA_MAX_SHIFT+1U, &peak, &w_peak);
+// Parabola through a peak and its two neighbours -> how far the real top is from the middle (-0.5..+0.5)
+static float parabola_offset(float y_left, float y_mid, float y_right)
+{
+	float den = y_left - 2.0f * y_mid + y_right;
+	if (den == 0.0f) {
+		return 0.0f;							// flat top: stay on the middle point
+	}
+	return 0.5f * (y_left - y_right) / den;
+}
 
-	// 5. Parabola through the peak and its neighbours -> fraction of a sample
+static float wrap_360(float az)
+{
+	if (az < 0.0f) {
+		az += 360.0f;
+	} else if (az >= 360.0f) {
+		az -= 360.0f;
+	}
+	return az;
+}
+
+/* Old least squares, not used: one pair's highest point -> delay in seconds
+static float pair_delay(const float *corr_p)
+{
+	float peak;
+	uint32_t w_peak;
+
+	// 1. Highest point
+	arm_max_f32(corr_p, DOA_WIN, &peak, &w_peak);
+
+	// 2. Parabola -> fraction of a sample (needs a neighbour on both sides)
 	float delta = 0.0f;
-	if (w_peak > 0U && w_peak < 2U*DOA_MAX_SHIFT) {
-		float y_left =  win[w_peak - 1U];
-		float y_mid =   win[w_peak];
-		float y_right = win[w_peak + 1U];
-		float den = y_left - 2.0f * y_mid + y_right;
-		if (den != 0.0f) {
-			delta = 0.5f * (y_left - y_right) / den;
-		}
+	if (w_peak > 0U && w_peak < DOA_WIN - 1U) {
+		delta = parabola_offset(corr_p[w_peak - 1U], corr_p[w_peak], corr_p[w_peak + 1U]);
 	}
 
-	// 6. Back to lag in samples, then seconds;
-	float lag_peak =(float)w_peak - (float)DOA_MAX_SHIFT + delta;
+	// 3. Back to lag in samples, then seconds
+	float lag_peak = (float)w_peak - (float)DOA_MAX_SHIFT + delta;
 
 	return lag_peak / (float)FS_HZ;
+}
+*/
+
+// Value of curve y at a fractional index x, from a smooth curve through the 4 nearest samples (Catmull-Rom)
+// A straight line between 2 samples was up to 2 deg off; this matches the exact answer
+static float read_between(const float *y, float x)
+{
+	uint32_t i = (uint32_t)x;							// sample just left of x
+	float t = x - (float)i;								// how far toward the next one (0..1)
+	float y0 = y[i - 1U], y1 = y[i], y2 = y[i + 1U], y3 = y[i + 2U];
+
+	float a = -0.5f * y0 + 1.5f * y1 - 1.5f * y2 + 0.5f * y3;
+	float b =         y0 - 2.5f * y1 + 2.0f * y2 - 0.5f * y3;
+	float c = -0.5f * y0              + 0.5f * y2;
+	return ((a * t + b) * t + c) * t + y1;
+}
+
+// SRP-PHAT: score every angle by adding up what each pair's curve says there, keep the best
+static float srp_azimuth(void)
+{
+	float peak;
+	uint32_t d_peak;
+
+	// 1. Score each angle d
+	for (uint32_t d=0; d<SRP_N_ANGLES; d++) {
+		float score = 0.0f;
+		for (uint32_t p=0; p<NUM_PAIRS; p++) {
+			score += read_between(corr[p], srp_idx[d][p]);		// this pair's curve where angle d says its peak is
+		}
+		g_srp_map[d] = score;
+	}
+
+	// 2. Best angle
+	arm_max_f32(g_srp_map, SRP_N_ANGLES, &peak, &d_peak);
+
+	// 3. Parabola for between grid angles. Map is a circle: left of 0 deg is 358 deg
+	float y_left =  g_srp_map[(d_peak + SRP_N_ANGLES - 1U) % SRP_N_ANGLES];
+	float y_right = g_srp_map[(d_peak + 1U) % SRP_N_ANGLES];
+	float delta = parabola_offset(y_left, peak, y_right);
+
+	// 4. Grid index -> degrees
+	return wrap_360(((float)d_peak + delta) * (360.0f / (float)SRP_N_ANGLES));
 }
 
 static void estimate(void)
@@ -174,21 +240,24 @@ static void estimate(void)
 	uint32_t valid = (level_db > floor_db + DOA_GATE_DB);
 
 	if (valid) {
-		// 2. One delay per pair, combined into a direction vector by least squares
+		// 2. One correlation curve per pair
+		for (uint32_t p=0; p<NUM_PAIRS; p++) {
+			pair_corr(acc[p], corr[p]);
+		}
+
+		// 3. SRP-PHAT: all pairs vote on every angle together
+		g_doa_az = srp_azimuth();
+
+		/* Old least squares, not used: one delay per pair, combined into one direction
 		float ux = 0.0f, uy = 0.0f;
 		for (uint32_t p=0; p<NUM_PAIRS; p++) {
-			float tau = pair_delay(acc[p]);
+			float tau = pair_delay(corr[p]);
 			g_doa_tau_us[p] = tau * 1e6f;
 			ux += ls[0][p] * tau;
 			uy += ls[1][p] * tau;
 		}
-
-		// 3. Direction vector -> angle 0..360 degrees CCW from mic 0
-		float az = atan2f(uy, ux) * (180.0f / PI);
-		if (az < 0.0f) {
-			az += 360.0f;
-		}
-		g_doa_az = az;
+		g_doa_az_ls = wrap_360(atan2f(uy, ux) * (180.0f / PI));
+		*/
 	}
 
 	// 4. Publish, then start the next DOA_K frames
@@ -204,13 +273,12 @@ static void estimate(void)
 
 /* Setup */
 
-// Least squares: each pair gives tau_p = a_p . u with a_p = -(p_i - p_j) / c
-// u = (A^T A)^-1 A^T tau; A^T A is 2x2, so invert it directly
+// Each pair gives tau_p = a_p . u with a_p = -(p_i - p_j) / c. SRP needs a_p
+// Old least squares (commented out) also solved u = (A^T A)^-1 A^T tau here
 static int ls_init(void)
 {
 	float px[NUM_MICS], py[NUM_MICS];				// mic positions (m)
-	float ax[NUM_PAIRS], ay[NUM_PAIRS];				// row p of A (s)
-	float sxx = 0.0f, sxy = 0.0f, syy = 0.0f;		// A^T A = [sxx sxy; sxy syy]
+	/* float sxx = 0.0f, sxy = 0.0f, syy = 0.0f; */	// A^T A = [sxx sxy; sxy syy]
 	uint32_t p = 0;
 
 	for (uint32_t m=0; m<NUM_MICS; m++) {			// mic 0 at +x, counter-clockwise
@@ -223,24 +291,42 @@ static int ls_init(void)
 		for (uint32_t j=i+1U; j<NUM_MICS; j++) {
 			pair_i[p] = (uint8_t)i;
 			pair_j[p] = (uint8_t)j;
-			ax[p] = -(px[i] - px[j]) / SPEED_OF_SOUND;
-			ay[p] = -(py[i] - py[j]) / SPEED_OF_SOUND;
-			sxx += ax[p] * ax[p];
-			sxy += ax[p] * ay[p];
-			syy += ay[p] * ay[p];
+			pair_ax[p] = -(px[i] - px[j]) / SPEED_OF_SOUND;		// row p of A (s)
+			pair_ay[p] = -(py[i] - py[j]) / SPEED_OF_SOUND;
+			/*
+			sxx += pair_ax[p] * pair_ax[p];
+			sxy += pair_ax[p] * pair_ay[p];
+			syy += pair_ay[p] * pair_ay[p];
+			*/
 			p++;
 		}
 	}
 
+	/*
 	float det = sxx * syy - sxy * sxy;
 	if (det <= 0.0f) {
 		return -1;									// mics all on one line: no unique direction
 	}
 	for (p=0; p<NUM_PAIRS; p++) {					// ls = (A^T A)^-1 A^T, one column per pair
-		ls[0][p] = (syy * ax[p] - sxy * ay[p]) / det;
-		ls[1][p] = (sxx * ay[p] - sxy * ax[p]) / det;
+		ls[0][p] = (syy * pair_ax[p] - sxy * pair_ay[p]) / det;
+		ls[1][p] = (sxx * pair_ay[p] - sxy * pair_ax[p]) / det;
 	}
+	*/
 	return 0;
+}
+
+// For each angle we try, where each pair's correlation peak should land
+// Same model as least squares (tau_p = a_p . u), just run forwards: angle -> delays
+static void srp_init(void)
+{
+	for (uint32_t d=0; d<SRP_N_ANGLES; d++) {
+		float az = 2.0f * PI * (float)d / (float)SRP_N_ANGLES;		// angle d in radians
+		float ux = cosf(az), uy = sinf(az);							// unit vector toward it
+		for (uint32_t p=0; p<NUM_PAIRS; p++) {
+			float tau = pair_ax[p] * ux + pair_ay[p] * uy;			// delay this pair would see (s)
+			srp_idx[d][p] = tau * (float)FS_HZ + (float)DOA_MAX_SHIFT;	// -> samples -> index into corr (lag 0 is index 14)
+		}
+	}
 }
 
 // A tone exactly on bin TEST_BIN must come out of the FFT on that bin (bring-up check, delete later)
@@ -260,8 +346,9 @@ static int fft_selftest(void)
 
 int doa_init(void)
 {
-	// search window must cover the largest delay across the array, +1 for the parabola
-	if (DOA_MAX_SHIFT < (uint32_t)ceilf(2.0f * MIC_RADIUS_M / SPEED_OF_SOUND * FS_HZ) + 1U) {
+	// search window must cover the largest delay across the array (12.59), +2 so the parabola
+	// and read_between always have neighbours inside corr
+	if (DOA_MAX_SHIFT < (uint32_t)floorf(2.0f * MIC_RADIUS_M / SPEED_OF_SOUND * FS_HZ) + 2U) {
 		return -1;
 	}
 	if (arm_rfft_fast_init_f32(&fft, N_FFT) != ARM_MATH_SUCCESS) {
@@ -270,7 +357,11 @@ int doa_init(void)
 	if (fft_selftest() != 0) {
 		return -3;
 	}
-	return ls_init();
+	if (ls_init() != 0) {
+		return -4;
+	}
+	srp_init();										// needs pair_ax, pair_ay from ls_init
+	return 0;
 }
 
 

@@ -28,6 +28,8 @@
 #define DOA_MAX_SHIFT		14U									// 13 + 1 so parabola can get true delay max 12.59
 #define DOA_GATE_DB			10.0f
 #define DOA_FLOOR_RISE_DB	0.05f
+#define DOA_WIN				(2U * DOA_MAX_SHIFT + 1U)			// 29 lags kept per pair (-14..+14)
+#define SRP_N_ANGLES		180U								// angles SRP tries, one every 2 deg
 
 /* Beamformer (STFT, 50% overlap) */
 #define BF_FFT				512U								// samples per frame = FFT size (10.7ms)

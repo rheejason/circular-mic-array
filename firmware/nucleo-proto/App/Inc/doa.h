@@ -16,9 +16,11 @@ void doa_push(const int16_t *block);
 void doa_task(void);
 
 /* Debug values (Live Expressions) */
-extern volatile float 	 g_doa_az;					// azimuth (0-360), CCW from mic 0
+extern volatile float 	 g_doa_az;					// azimuth (0-360), CCW from mic 0, from SRP-PHAT
+/* extern volatile float g_doa_az_ls; */		// old least squares, not used
+extern float 			 g_srp_map[SRP_N_ANGLES];	// score of each angle, index d = angle / 2 deg
 extern volatile uint32_t g_doa_valid;				// 1 if last update passed energy gate
-extern volatile float 	 g_doa_tau_us[NUM_PAIRS];	// per-pair delay, microseconds (0,1) (0,2) (0,3) (1,2) (1,3) (2,3)
+/* extern volatile float g_doa_tau_us[NUM_PAIRS]; */	// old least squares, not used
 extern volatile float 	 g_doa_level_db;			// in-band level of last update
 extern volatile float 	 g_doa_floor_db;			// tracked noise floor
 extern volatile uint32_t g_doa_updates;				// updates ~10/s

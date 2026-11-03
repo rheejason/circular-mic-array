@@ -20,6 +20,24 @@ fp-info-cache
 \#auto_saved_files#
 _autosave-*
 
+# KiCad fabrication outputs (regenerate from the board; don't commit)
+hardware/kicad/**/gerbers/
+hardware/kicad/**/*.zip
+*.gbr
+*.gbrjob
+*.drl
+*.gtl
+*.gbl
+*.gts
+*.gbs
+*.gto
+*.gbo
+*.gtp
+*.gbp
+*.gm1
+*.g1
+*.g2
+
 # Python (for when the prototype moves in)
 __pycache__/
 *.pyc
