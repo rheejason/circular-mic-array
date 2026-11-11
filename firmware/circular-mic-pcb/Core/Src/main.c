@@ -21,7 +21,7 @@
 
 /* Private includes ----------------------------------------------------------*/
 /* USER CODE BEGIN Includes */
-#include "tlc59116.h"
+#include "board_test.h"
 
 /* USER CODE END Includes */
 
@@ -52,9 +52,6 @@ UART_HandleTypeDef huart3;
 PCD_HandleTypeDef hpcd_USB_OTG_FS;
 
 /* USER CODE BEGIN PV */
-// Watch these in the debugger if the LEDs stay dark.
-volatile uint32_t g_led_init_fails;   // counts up while the TLC59116F does not answer on I2C
-volatile uint32_t g_led_laps;         // counts up once per trip around the ring
 
 /* USER CODE END PV */
 
@@ -114,11 +111,7 @@ int main(void)
   MX_USB_OTG_FS_PCD_Init();
   MX_USART3_UART_Init();
   /* USER CODE BEGIN 2 */
-  while (tlc59116_init(&hi2c1) != HAL_OK)
-  {
-    g_led_init_fails++;
-    HAL_Delay(500);
-  }
+  board_test_init();
 
   /* USER CODE END 2 */
 
@@ -129,18 +122,7 @@ int main(void)
     /* USER CODE END WHILE */
 
     /* USER CODE BEGIN 3 */
-    // One LED at a time around the ring (OUT0 -> OUT15), then all 16 dim for half a second.
-    for (uint8_t k = 0; k < TLC59116_NUM_LEDS; k++)
-    {
-      tlc59116_set(&hi2c1, k, 255);
-      HAL_Delay(100);
-      tlc59116_set(&hi2c1, k, 0);
-    }
-    tlc59116_set_all(&hi2c1, 40);
-    HAL_Delay(500);
-    tlc59116_set_all(&hi2c1, 0);
-    HAL_Delay(500);
-    g_led_laps++;
+    board_test_loop();
   }
   /* USER CODE END 3 */
 }
