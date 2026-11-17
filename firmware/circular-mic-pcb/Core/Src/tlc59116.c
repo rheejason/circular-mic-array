@@ -41,8 +41,10 @@ HAL_StatusTypeDef tlc59116_set(I2C_HandleTypeDef *hi2c, uint8_t k, uint8_t brigh
 HAL_StatusTypeDef tlc59116_set_all(I2C_HandleTypeDef *hi2c, uint8_t brightness)
 {
     HAL_StatusTypeDef st = HAL_OK;
-    for (uint8_t k = 0; k < TLC59116_NUM_LEDS && st == HAL_OK; k++) {
-        st = write_reg(hi2c, REG_PWM0 + k, brightness);
+    for (uint8_t k = 0; k < TLC59116_NUM_LEDS; k++) {   // keep going after a failure so one bad write can't leave LEDs stuck
+        if (write_reg(hi2c, REG_PWM0 + k, brightness) != HAL_OK) {
+            st = HAL_ERROR;
+        }
     }
     return st;
 }
