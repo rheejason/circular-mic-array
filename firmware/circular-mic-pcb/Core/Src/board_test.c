@@ -6,7 +6,7 @@
 
 extern I2C_HandleTypeDef hi2c1;
 
-#define LED_BRIGHTNESS 64U   // 0 = off, 255 = full
+#define LED_BRIGHTNESS 255U  // 0 = off, 255 = full. 255 keeps the outputs on for steady multimeter readings; 64 for normal viewing
 
 volatile uint32_t g_led_init_fails;   // counts up while the TLC59116F does not answer on I2C
 
