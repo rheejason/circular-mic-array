@@ -1,8 +1,8 @@
-// Board bring-up test: all LEDs on at a low level.
+// Board bring-up test: mic level meter on the LED ring.
 #ifndef BOARD_TEST_H
 #define BOARD_TEST_H
 
 void board_test_init(void);   // call once after the MX_..._Init() calls
-void board_test_loop(void);   // call forever from the main loop (does nothing for now)
+void board_test_loop(void);   // call forever from the main loop
 
 #endif
