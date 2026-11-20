@@ -1,0 +1,77 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="20 18 180 240" width="720" height="960" font-family="Helvetica,Arial,sans-serif">
+<rect x="20" y="18" width="180" height="240" fill="#ffffff"/>
+<text x="99.15" y="25.5" font-size="4.2" text-anchor="middle" font-weight="bold" fill="#111">PDM_DAT3 (MK7 + MK8 data): route and probe points</text>
+<text x="99.15" y="30" font-size="2.8" text-anchor="middle" fill="#444">Seen from the component side (mics and chips facing you), same view as KiCad</text>
+<circle cx="99.15" cy="103.35" r="70" fill="#e9f2e9" stroke="#2f6b2f" stroke-width="0.6"/>
+<rect x="113.65" y="106.95" width="20" height="20" fill="#cfcfcf" stroke="#666" stroke-width="0.3"/>
+<text x="123.65" y="105.75" font-size="2.6" text-anchor="middle" fill="#333">STM32 (U1)</text>
+<rect x="74.69" y="73.57000000000001" width="4.4" height="9.7" fill="#cfcfcf" stroke="#666" stroke-width="0.3"/>
+<text x="76.89" y="72.37" font-size="2.6" text-anchor="middle" fill="#333">LED driver (U3)</text>
+<rect x="122.65" y="134.95" width="12.7" height="2.5" fill="#cfcfcf" stroke="#666" stroke-width="0.3"/>
+<text x="129.0" y="133.75" font-size="2.6" text-anchor="middle" fill="#333">J1 SWD</text>
+<rect x="92.15" y="101.05000000000001" width="2.5" height="15.2" fill="#cfcfcf" stroke="#666" stroke-width="0.3"/>
+<text x="93.4" y="99.85000000000001" font-size="2.6" text-anchor="middle" fill="#333">J3</text>
+<rect x="129.09" y="84.41" width="9" height="7" fill="#cfcfcf" stroke="#666" stroke-width="0.3"/>
+<text x="133.59" y="83.21" font-size="2.6" text-anchor="middle" fill="#333">USB-C (J2)</text>
+<rect x="97.9" y="105.35" width="3" height="3" fill="#cfcfcf" stroke="#666" stroke-width="0.3"/>
+<text x="101.5" y="101.8" font-size="2.6" fill="#333">ADAU7118 (U4), pin 6</text>
+<polyline points="99.15,108.3 99.15,109.35 100.0,110.2" fill="none" stroke="#1f6fd1" stroke-width="0.9" stroke-linejoin="round"/>
+<polyline points="96.2,108.6 79.2,91.6 54.8,91.6" fill="none" stroke="#1f6fd1" stroke-width="0.9" stroke-linejoin="round"/>
+<polyline points="53.4,90.2 43.47,80.27 41.52,80.27" fill="none" stroke="#1f6fd1" stroke-width="0.9" stroke-linejoin="round"/>
+<polyline points="41.52,80.27 58.2,63.58" fill="none" stroke="#1f6fd1" stroke-width="0.9" stroke-linejoin="round"/>
+<polyline points="41.52,80.27 41.52,103.63 42.08,104.19" fill="none" stroke="#1f6fd1" stroke-width="0.9" stroke-linejoin="round"/>
+<polyline points="100.0,110.2 98.22,110.62 96.2,108.6" fill="none" stroke="#1f6fd1" stroke-width="0.9" stroke-dasharray="1.2,0.8" stroke-linejoin="round"/>
+<polyline points="54.8,91.6 53.4,90.2" fill="none" stroke="#1f6fd1" stroke-width="0.9" stroke-dasharray="1.2,0.8" stroke-linejoin="round"/>
+<circle cx="41.52" cy="80.27" r="1.1" fill="#1f6fd1"/>
+<text x="37" y="78" font-size="2.6" text-anchor="end" fill="#1f6fd1">split</text>
+<rect x="97.4" y="45.89" width="3.5" height="3.5" rx="0.5" fill="#ffffff" stroke="#888" stroke-width="0.4"/>
+<text x="99.15" y="42.84" font-size="3.4" text-anchor="middle" font-weight="bold" fill="#777">MK1</text>
+<rect x="136.79" y="62.21" width="3.5" height="3.5" rx="0.5" fill="#ffffff" stroke="#888" stroke-width="0.4"/>
+<text x="142.78264068711928" y="60.91735931288072" font-size="3.4" text-anchor="middle" font-weight="bold" fill="#777">MK2</text>
+<rect x="153.11" y="101.6" width="3.5" height="3.5" rx="0.5" fill="#ffffff" stroke="#888" stroke-width="0.4"/>
+<text x="160.86" y="104.55" font-size="3.4" text-anchor="middle" font-weight="bold" fill="#777">MK3</text>
+<rect x="136.79" y="140.99" width="3.5" height="3.5" rx="0.5" fill="#ffffff" stroke="#888" stroke-width="0.4"/>
+<text x="142.78264068711928" y="148.1826406871193" font-size="3.4" text-anchor="middle" font-weight="bold" fill="#777">MK4</text>
+<rect x="97.4" y="157.31" width="3.5" height="3.5" rx="0.5" fill="#ffffff" stroke="#888" stroke-width="0.4"/>
+<text x="99.15" y="166.26" font-size="3.4" text-anchor="middle" font-weight="bold" fill="#777">MK5</text>
+<rect x="58.01" y="140.99" width="3.5" height="3.5" rx="0.5" fill="#ffffff" stroke="#888" stroke-width="0.4"/>
+<text x="55.517359312880714" y="148.1826406871193" font-size="3.4" text-anchor="middle" font-weight="bold" fill="#777">MK6</text>
+<rect x="41.69" y="101.6" width="3.5" height="3.5" rx="0.5" fill="#ffd8a8" stroke="#c05600" stroke-width="0.4"/>
+<text x="37.44" y="104.55" font-size="3.4" text-anchor="middle" font-weight="bold" fill="#c05600">MK7</text>
+<rect x="58.01" y="62.21" width="3.5" height="3.5" rx="0.5" fill="#ffd8a8" stroke="#c05600" stroke-width="0.4"/>
+<text x="55.517359312880714" y="60.91735931288072" font-size="3.4" text-anchor="middle" font-weight="bold" fill="#c05600">MK8</text>
+<line x1="91.8" y1="104.4" x2="84" y2="112" stroke="#b5179e" stroke-width="0.3"/>
+<circle cx="91.8" cy="104.4" r="1.0" fill="#b5179e"/>
+<circle cx="84" cy="112" r="2.6" fill="#ffffff" stroke="#b5179e" stroke-width="0.5"/>
+<text x="84" y="113.3" font-size="3.4" text-anchor="middle" font-weight="bold" fill="#b5179e">A</text>
+<line x1="54.8" y1="91.6" x2="62" y2="97" stroke="#b5179e" stroke-width="0.3"/>
+<circle cx="54.8" cy="91.6" r="1.0" fill="#b5179e"/>
+<circle cx="62" cy="97" r="2.6" fill="#ffffff" stroke="#b5179e" stroke-width="0.5"/>
+<text x="62" y="98.3" font-size="3.4" text-anchor="middle" font-weight="bold" fill="#b5179e">B</text>
+<line x1="53.4" y1="90.2" x2="47" y2="94.5" stroke="#b5179e" stroke-width="0.3"/>
+<circle cx="53.4" cy="90.2" r="1.0" fill="#b5179e"/>
+<circle cx="47" cy="94.5" r="2.6" fill="#ffffff" stroke="#b5179e" stroke-width="0.5"/>
+<text x="47" y="95.8" font-size="3.4" text-anchor="middle" font-weight="bold" fill="#b5179e">C</text>
+<line x1="96.2" y1="108.6" x2="104" y2="121" stroke="#b5179e" stroke-width="0.3"/>
+<circle cx="96.2" cy="108.6" r="1.0" fill="#b5179e"/>
+<circle cx="104" cy="121" r="2.6" fill="#ffffff" stroke="#b5179e" stroke-width="0.5"/>
+<text x="104" y="122.3" font-size="3.4" text-anchor="middle" font-weight="bold" fill="#b5179e">D</text>
+<line x1="100.0" y1="110.2" x2="112" y2="116" stroke="#b5179e" stroke-width="0.3"/>
+<circle cx="100.0" cy="110.2" r="1.0" fill="#b5179e"/>
+<circle cx="112" cy="116" r="2.6" fill="#ffffff" stroke="#b5179e" stroke-width="0.5"/>
+<text x="112" y="117.3" font-size="3.4" text-anchor="middle" font-weight="bold" fill="#b5179e">E</text>
+<line x1="25" y1="180.0" x2="29.5" y2="180.0" stroke="#1f6fd1" stroke-width="0.9"/>
+<text x="31" y="181.0" font-size="2.9" fill="#222">Blue: PDM_DAT3 on the front copper. Dashed: short hops on the back copper, between two vias.</text>
+<text x="31" y="185.5" font-size="2.9" fill="#222">Route: ADAU7118 pin 6 → D/E vias → A (test point) → B/C vias → split → MK8 and MK7.</text>
+<circle cx="27.3" cy="189.0" r="1.0" fill="#b5179e"/>
+<text x="31" y="190.0" font-size="2.9" fill="#222">Pink A–E: probe points. A is the PDM_DAT3 test pad. B–E are vias (0.6 mm, covered by solder mask):</text>
+<text x="31" y="194.5" font-size="2.9" fill="#222">press a needle tip into the small dimple in the middle of the via to reach copper.</text>
+<text x="31" y="199.0" font-size="2.9" fill="#222"></text>
+<text x="31" y="203.5" font-size="2.9" fill="#222">Board unpowered, meter on continuity (beep):</text>
+<text x="31" y="208.0" font-size="2.9" fill="#222">   A to C beeps        → the line is intact from the test pad, through both vias, to the split.</text>
+<text x="31" y="212.5" font-size="2.9" fill="#222">   A to B beeps, A to C silent → the back-copper hop between B and C is broken.</text>
+<text x="31" y="217.0" font-size="2.9" fill="#222">   A to B silent       → break between the test pad and via B (front copper).</text>
+<text x="31" y="221.5" font-size="2.9" fill="#222">   A to D and A to E   → the ADAU7118 side (only matters if a mic drives A to 0.9 V but indices stay 0).</text>
+<text x="31" y="226.0" font-size="2.9" fill="#222"></text>
+<text x="31" y="230.5" font-size="2.9" fill="#222">Board on: B, C, D, E should all read the same voltage as A.</text>
+</svg>
