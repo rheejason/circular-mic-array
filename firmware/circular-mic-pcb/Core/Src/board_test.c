@@ -8,6 +8,10 @@
 //   g_sai_errors   should stay 0
 //   g_mic_p2p[8]   level over the last 50 ms (peak-to-peak, 24-bit counts)
 //   g_mic_floor[8] each mic's quiet level. All 8 should be similar; one far off = suspect mic.
+//   g_pair_diff_pct[4]  are the two channels of each data line really two different mics?
+//                       Pair k = slots 2k and 2k+1 (one data line, two mics). Read it in a quiet room:
+//                       ~100-150 = two separate mics (their own noise is independent)
+//                       under ~30 = both slots carry the same signal (one mic missing or not driving)
 // The same numbers are printed on USART3 (J3, 115200 baud) once a second.
 
 #include "board_test.h"
@@ -24,6 +28,7 @@ extern UART_HandleTypeDef huart3;
 #define HALF_WORDS      (HALF_FRAMES * NUM_SLOTS)   // one word = one 32-bit TDM slot
 #define METER_PERIOD_MS 50U
 #define LEVEL_PER_6DB   36U                         // brightness added for each doubling above the quiet level
+#define NUM_PAIRS       (NUM_SLOTS / 2U)            // one pair per PDM data line
 
 // Slot s -> mic name and ring position p (mic at 45*p deg CCW from MK3, component side up).
 //   slot:  0    1    2    3    4    5    6    7
@@ -36,16 +41,24 @@ volatile uint32_t g_sai_halves;
 volatile uint32_t g_sai_errors;
 volatile int32_t  g_mic_p2p[NUM_SLOTS];
 volatile int32_t  g_mic_floor[NUM_SLOTS];
+volatile int32_t  g_pair_diff_p2p[NUM_PAIRS];   // p2p of (slot 2k - slot 2k+1) over the last 50 ms
+volatile int32_t  g_pair_diff_pct[NUM_PAIRS];   // g_pair_diff_p2p as % of the louder slot's p2p
 
 static int32_t dma_buf[2U * HALF_WORDS];   // AXI SRAM (.bss), reachable by DMA1
 static volatile int32_t run_min[NUM_SLOTS];
 static volatile int32_t run_max[NUM_SLOTS];
+static volatile int32_t diff_min[NUM_PAIRS];
+static volatile int32_t diff_max[NUM_PAIRS];
 
 static void reset_min_max(void)
 {
     for (uint32_t s = 0; s < NUM_SLOTS; s++) {
         run_min[s] = INT32_MAX;
         run_max[s] = INT32_MIN;
+    }
+    for (uint32_t k = 0; k < NUM_PAIRS; k++) {
+        diff_min[k] = INT32_MAX;
+        diff_max[k] = INT32_MIN;
     }
 }
 
@@ -62,6 +75,18 @@ static void scan_half(const int32_t *x)
         }
         run_min[s] = lo;
         run_max[s] = hi;
+    }
+    // Difference between the two slots of each data line, sample by sample.
+    for (uint32_t k = 0; k < NUM_PAIRS; k++) {
+        int32_t lo = diff_min[k];
+        int32_t hi = diff_max[k];
+        for (uint32_t n = 0; n < HALF_FRAMES; n++) {
+            int32_t d = (x[n * NUM_SLOTS + 2U * k] >> 8) - (x[n * NUM_SLOTS + 2U * k + 1U] >> 8);
+            if (d < lo) lo = d;
+            if (d > hi) hi = d;
+        }
+        diff_min[k] = lo;
+        diff_max[k] = hi;
     }
     g_sai_halves++;
 }
@@ -94,6 +119,9 @@ void board_test_loop(void)
     for (uint32_t s = 0; s < NUM_SLOTS; s++) {
         g_mic_p2p[s] = (run_max[s] > run_min[s]) ? (run_max[s] - run_min[s]) : 0;
     }
+    for (uint32_t k = 0; k < NUM_PAIRS; k++) {
+        g_pair_diff_p2p[k] = (diff_max[k] > diff_min[k]) ? (diff_max[k] - diff_min[k]) : 0;
+    }
     reset_min_max();
     __enable_irq();
 
@@ -124,14 +152,25 @@ void board_test_loop(void)
         tlc59116_set(&hi2c1, (k + 1U) % 16U, brightness);
     }
 
-    // Once a second: "MK2 p2p/floor ..." for every mic.
+    for (uint32_t k = 0; k < NUM_PAIRS; k++) {
+        int32_t a = g_mic_p2p[2U * k];
+        int32_t b = g_mic_p2p[2U * k + 1U];
+        int32_t louder = (a > b) ? a : b;
+        g_pair_diff_pct[k] = (louder > 0) ? (int32_t)((int64_t)g_pair_diff_p2p[k] * 100 / louder) : 0;
+    }
+
+    // Once a second: "MK2 p2p/floor ..." for every mic, then the pair check.
     if (++ticks >= 1000U / METER_PERIOD_MS) {
-        char line[160];
+        char line[224];
         int len = 0;
         ticks = 0;
         for (uint32_t s = 0; s < NUM_SLOTS; s++) {
             len += snprintf(&line[len], sizeof(line) - (size_t)len, "%s %ld/%ld  ",
                             name_of_slot[s], (long)g_mic_p2p[s], (long)g_mic_floor[s]);
+        }
+        for (uint32_t k = 0; k < NUM_PAIRS; k++) {
+            len += snprintf(&line[len], sizeof(line) - (size_t)len, "pair%lu %ld%%  ",
+                            (unsigned long)k, (long)g_pair_diff_pct[k]);
         }
         len += snprintf(&line[len], sizeof(line) - (size_t)len, "\r\n");
         HAL_UART_Transmit(&huart3, (uint8_t *)line, (uint16_t)len, 50);
